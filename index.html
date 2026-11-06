@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowForge Revenue Diagnostic</title>
+  <meta name="description" content="Identify potential revenue friction, quantify illustrative opportunities and explore five-year financial scenarios." />
+  <link rel="icon" type="image/png" href="ffr-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --black:      #080808;
+      --off-black:  #111111;
+      --surface:    #141414;
+      --surface-2:  #1a1a1a;
+      --border:     #2a2a2a;
+      --border-lt:  #3a3a3a;
+      --accent:     #d4f53c;
+      --accent-glow:rgba(212,245,60,0.08);
+      --accent-soft:rgba(212,245,60,0.12);
+      --text-pri:   #f0ede8;
+      --text-sec:   #8a8784;
+      --text-muted: #4a4846;
+      --red:        #f87171;
+      --orange:     #fb923c;
+      --green:      #4ade80;
+      --blue:       #60a5fa;
+      --font-d:     'Inter', sans-serif;
+      --font-b:     'Inter', sans-serif;
+      --font-m:     'JetBrains Mono', monospace;
+      --r:          10px;
+      --r-lg:       14px;
+      --r-sm:       6px;
+      --ease:       cubic-bezier(0.16,1,0.3,1);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--black);color:var(--text-pri);font-family:var(--font-b);font-size:15px;line-height:1.65;}
+
+    /* NAV */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,8,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;}
+    .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--text-pri);text-decoration:none;}
+    .logo img{height:26px;}
+    .logo-acc{color:var(--accent);}
+    .nav-links{display:flex;align-items:center;gap:22px;}
+    .nav-link{font-size:13px;color:var(--text-sec);text-decoration:none;transition:color .2s;}
+    .nav-link:hover,.nav-link.active{color:var(--text-pri);}
+    .nav-cta{background:var(--accent);color:var(--black);font-family:var(--font-d);font-size:13px;font-weight:700;padding:8px 18px;border-radius:var(--r-sm);text-decoration:none;}
+
+    /* HERO */
+    .hero{padding:112px 24px 56px;text-align:center;position:relative;overflow:hidden;background:var(--black);}
+    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.18;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 20%,transparent 100%);}
+    .hero h1{font-family:var(--font-d);font-size:clamp(28px,4.2vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:18px;position:relative;color:var(--text-pri);}
+    .acc{color:var(--accent);}
+    .hero-sub{font-size:16px;color:var(--text-sec);max-width:560px;margin:0 auto 40px;line-height:1.75;position:relative;}
+
+    /* SESSION PILLS */
+    .session-pills{display:flex;gap:10px;justify-content:center;margin-bottom:0;position:relative;}
+    .pill{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:13px;color:var(--text-sec);cursor:pointer;transition:all .2s;}
+    .pill.active{background:var(--surface-2);border-color:var(--accent);color:var(--text-pri);font-weight:600;}
+    .pill-dot{width:7px;height:7px;border-radius:50%;background:var(--border-lt);transition:background .2s;}
+    .pill.active .pill-dot{background:var(--accent);}
+
+    /* MAIN */
+    .wrap{max-width:860px;margin:0 auto;padding:40px 20px 100px;}
+
+    /* SESSION PANELS */
+    .session{display:none;}
+    .session.active{display:block;}
+
+    /* CARD */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px;}
+    .card-head{background:var(--surface-2);border-bottom:1px solid var(--border);padding:20px 28px;}
+    .card-head h2{font-family:var(--font-d);font-size:17px;font-weight:600;margin-bottom:4px;}
+    .card-head p{font-size:13px;color:var(--text-sec);line-height:1.6;}
+    .card-body{padding:28px;}
+
+    /* FORM */
+    .fg{display:flex;flex-direction:column;gap:6px;}
+    .fg label{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);}
+    .fg label .opt{color:var(--border-lt);font-size:8px;margin-left:4px;}
+    .fg input,.fg select{background:var(--off-black);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-family:var(--font-b);font-size:13.5px;color:var(--text-pri);outline:none;transition:border-color .2s;width:100%;}
+    .fg input:focus,.fg select:focus{border-color:var(--accent);}
+    .fg select option{background:var(--off-black);}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+    .span-2{grid-column:span 2;}
+    .opt-divider{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:4px 0 14px;}
+    .opt-divider::before,.opt-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* RUN BUTTON */
+    .run-btn{width:100%;padding:16px;background:var(--accent);color:var(--black);border:none;border-radius:var(--r);font-family:var(--font-d);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:opacity .2s,transform .2s;}
+    .run-btn:hover{opacity:.9;transform:translateY(-1px);}
+    .run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+    /* PROGRESS BAR */
+    .progress-wrap{display:none;margin-bottom:20px;}
+    .progress-wrap.active{display:block;}
+    .progress-label{font-family:var(--font-m);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+    .progress-bar-bg{background:var(--surface);border:1px solid var(--border);border-radius:100px;height:6px;overflow:hidden;}
+    .progress-bar-fill{height:100%;background:var(--accent);border-radius:100px;transition:width .6s var(--ease);width:0%;}
+    .progress-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px;}
+    .progress-step{text-align:center;}
+    .progress-step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);margin:0 auto 5px;transition:background .3s;}
+    .progress-step.active .progress-step-dot{background:var(--accent);box-shadow:0 0 8px rgba(212,245,60,0.4);}
+    .progress-step.done .progress-step-dot{background:var(--text-sec);}
+    .progress-step-label{font-family:var(--font-m);font-size:8.5px;color:var(--text-muted);line-height:1.4;transition:color .3s;}
+    .progress-step.active .progress-step-label{color:var(--accent);}
+    .progress-step.done .progress-step-label{color:var(--text-sec);}
+
+    /* ERROR */
+    .err-box{display:none;background:var(--surface);border:1px solid var(--red);border-radius:var(--r-lg);padding:22px 26px;margin-bottom:20px;}
+    .err-box.active{display:block;}
+    .err-title{font-family:var(--font-d);font-size:14px;color:var(--red);margin-bottom:6px;}
+    .err-msg{font-size:13px;color:var(--text-sec);margin-bottom:14px;}
+    .btn-sm{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font-d);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-pri);transition:all .2s;}
+    .btn-sm:hover{border-color:var(--border-lt);}
+    .btn-acc{border-color:rgba(212,245,60,.3);color:var(--accent);background:transparent;}
+    .btn-acc:hover{background:var(--accent-glow);}
+
+    /* RESULTS */
+    .result-wrap{display:none;}
+    .result-wrap.active{display:block;}
+
+    /* RESULT HEADER */
+    .result-header{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:none;padding:22px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .result-company{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:-.02em;}
+    .result-meta{font-family:var(--font-m);font-size:10px;color:var(--text-muted);margin-top:4px;}
+    .result-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+    .result-bar{background:var(--black);border:1px solid var(--border);border-top:none;border-bottom:none;padding:9px 28px;font-family:var(--font-m);font-size:9px;color:var(--accent);letter-spacing:.06em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .result-bar span{color:var(--text-muted);}
+
+    .result-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;}
+
+    /* METRICS STRIP */
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
+    .metric{padding:18px 20px;border-right:1px solid var(--border);}
+    .metric:last-child{border-right:none;}
+    .metric-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+    .metric-val{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:-.02em;}
+    .metric-sub{font-size:11px;color:var(--text-muted);margin-top:3px;}
+
+    /* RESULT SECTIONS */
+    .rsections{padding:24px 28px;display:flex;flex-direction:column;gap:24px;}
+    .rlabel{font-family:var(--font-m);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:9px;}
+    .rtext{font-size:13.5px;color:var(--text-sec);line-height:1.75;}
+    .rtext strong{color:var(--text-pri);}
+
+    .ev-list{display:flex;flex-direction:column;gap:5px;}
+    .ev-item{font-size:13px;color:var(--text-sec);display:flex;align-items:flex-start;gap:9px;line-height:1.6;}
+    .ev-item::before{content:'·';color:var(--accent);flex-shrink:0;}
+
+    .asm-table{background:var(--off-black);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;}
+    .asm-row{display:grid;grid-template-columns:1fr 1fr;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;}
+    .asm-row:last-child{border-bottom:none;}
+    .asm-k{color:var(--text-muted);font-family:var(--font-m);font-size:10px;}
+    .asm-v{color:var(--text-pri);font-weight:500;text-align:right;}
+
+    .math-box{background:var(--off-black);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px;display:flex;flex-direction:column;gap:5px;}
+    .math-row{font-family:var(--font-m);font-size:11.5px;color:var(--text-sec);display:flex;align-items:flex-start;gap:9px;}
+    .math-row.res{color:var(--accent);font-weight:600;padding-top:7px;border-top:1px solid var(--border);margin-top:4px;}
+    .marrow{color:var(--text-muted);flex-shrink:0;width:12px;}
+
+    .opp-badge{background:var(--accent-soft);border:1px solid rgba(212,245,60,.2);border-radius:var(--r);padding:18px 22px;display:flex;align-items:flex-start;gap:18px;}
+    .opp-num{font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--accent);letter-spacing:-.02em;line-height:1;flex-shrink:0;}
+    .opp-lbl{font-size:13px;color:var(--text-sec);line-height:1.6;margin-bottom:7px;}
+    .conf-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+    .cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .ch .cdot{background:var(--green);} .ch{color:var(--green);}
+    .cm .cdot{background:var(--accent);} .cm{color:var(--accent);}
+    .cl .cdot{background:var(--orange);} .cl{color:var(--orange);}
+
+    .unk-tags{display:flex;flex-wrap:wrap;gap:6px;}
+    .unk-tag{font-family:var(--font-m);font-size:10px;color:var(--text-muted);background:var(--off-black);border:1px solid var(--border);padding:3px 10px;border-radius:var(--r-sm);}
+
+    .rec-list{display:flex;flex-direction:column;gap:10px;}
+    .rec{background:var(--off-black);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:13px 16px;display:flex;gap:12px;}
+    .rec-n{font-family:var(--font-m);font-size:10px;color:var(--accent);flex-shrink:0;padding-top:1px;}
+    .rec-t{font-size:13.5px;font-weight:600;color:var(--text-pri);margin-bottom:4px;}
+    .rec-d{font-size:12.5px;color:var(--text-sec);line-height:1.6;}
+
+    /* DIVIDER between audit and simulation */
+    .section-divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+
+    /* FORECAST */
+    .forecast-intro{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 28px;margin-bottom:20px;}
+    .forecast-intro h3{font-family:var(--font-d);font-size:17px;font-weight:600;margin-bottom:8px;}
+    .forecast-intro p{font-size:13.5px;color:var(--text-sec);line-height:1.75;}
+
+    /* CHART */
+    .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 28px;margin-bottom:20px;}
+    .chart-ttl{font-family:var(--font-d);font-size:15px;font-weight:600;margin-bottom:4px;}
+    .chart-sub{font-size:12px;color:var(--text-sec);margin-bottom:20px;}
+    .chart-wrap{position:relative;height:300px;}
+
+    /* SCENARIO CARDS */
+    .scenario-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+    .sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+    .sc-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px;}
+    .sc-val{font-family:var(--font-d);font-size:17px;font-weight:700;letter-spacing:-.02em;}
+    .sc-note{font-size:11px;color:var(--text-muted);margin-top:3px;}
+    .sc-status-quo .sc-val{color:var(--red);}
+    .sc-conservative .sc-val{color:var(--orange);}
+    .sc-base .sc-val{color:var(--accent);}
+    .sc-aggressive .sc-val{color:var(--green);}
+
+    .key-insight{background:var(--accent-glow);border:1px solid rgba(212,245,60,.15);border-left:3px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:16px 20px;margin-bottom:20px;}
+    .ki-lbl{font-family:var(--font-m);font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+    .ki-text{font-size:14px;color:var(--text-pri);font-weight:500;line-height:1.65;}
+
+    /* DEBATE */
+    .debate-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px;}
+    .debate-head{background:var(--surface-2);border-bottom:1px solid var(--border);padding:18px 26px;}
+    .debate-head h3{font-family:var(--font-d);font-size:15px;font-weight:600;margin-bottom:3px;}
+    .debate-head p{font-size:12px;color:var(--text-sec);}
+    .debate-body{padding:22px 26px;display:flex;flex-direction:column;gap:16px;}
+    .debate-round-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+    .debate-card{background:var(--off-black);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+    .dp{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+    .dp-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+    .dp-cfo .dp-icon{background:rgba(248,113,113,.1);}
+    .dp-inv .dp-icon{background:rgba(212,245,60,.1);}
+    .dp-con .dp-icon{background:rgba(74,222,128,.1);}
+    .dp-name{font-family:var(--font-m);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
+    .dp-cfo .dp-name{color:var(--red);}
+    .dp-inv .dp-name{color:var(--accent);}
+    .dp-con .dp-name{color:var(--green);}
+    .dp-arg{font-size:13px;color:var(--text-sec);line-height:1.7;}
+    .consensus{background:var(--accent-soft);border:1px solid rgba(212,245,60,.2);border-radius:var(--r);padding:14px 16px;margin-top:4px;}
+    .con-lbl{font-family:var(--font-m);font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+    .con-text{font-size:13px;color:var(--text-pri);line-height:1.7;}
+
+    /* DISCLAIMER */
+    .disclaimer{padding:14px 28px;border-top:1px solid var(--border);font-family:var(--font-m);font-size:9px;color:var(--text-muted);line-height:1.7;}
+
+    /* CTA STRIP */
+    .cta-strip{margin:0 0 0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+    .cta-strip p{font-size:13px;color:var(--text-sec);line-height:1.6;}
+    .cta-strip strong{color:var(--text-pri);}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:var(--accent);color:var(--black);border:none;border-radius:var(--r);font-family:var(--font-d);font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.9;}
+
+    /* ── SESSION 2: DOCUMENT UPLOAD ── */
+    .upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:36px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:14px;}
+    .upload-zone:hover,.upload-zone.over{border-color:var(--accent);background:var(--accent-glow);}
+    .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .uicon{font-size:32px;margin-bottom:10px;}
+    .utitle{font-family:var(--font-d);font-size:15px;font-weight:600;margin-bottom:5px;}
+    .usub{font-size:13px;color:var(--text-sec);}
+    .uaccept{font-family:var(--font-m);font-size:10px;color:var(--text-muted);margin-top:8px;}
+    .ufile{display:none;background:var(--off-black);border:1px solid var(--accent);border-radius:var(--r-sm);padding:10px 14px;align-items:center;gap:10px;font-size:13px;margin-bottom:14px;}
+    .ufile.active{display:flex;}
+    .ufile-name{flex:1;color:var(--text-pri);}
+    .ufile-rm{cursor:pointer;color:var(--text-muted);font-size:20px;line-height:1;}
+    .ufile-rm:hover{color:var(--red);}
+
+    /* RESPONSIVE */
+    @media(max-width:680px){
+      .nav-links{display:none;}
+      .hero{padding:88px 16px 44px;}
+      .wrap{padding:28px 14px 80px;}
+      .card-body{padding:20px;}
+      .grid-2,.grid-3{grid-template-columns:1fr;}
+      .span-2{grid-column:span 1;}
+      .metrics{grid-template-columns:1fr;}
+      .metric{border-right:none;border-bottom:1px solid var(--border);}
+      .opp-badge{flex-direction:column;gap:12px;}
+      .scenario-grid{grid-template-columns:1fr 1fr;}
+      .result-header{flex-direction:column;}
+      .result-actions{width:100%;}
+      .cta-strip{flex-direction:column;}
+    }
+
+    /* Chart summary */
+    .chart-summary-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 20px;
+    }
+    .cs-label {
+      font-family: var(--font-m);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .cs-text {
+      font-size: 13.5px;
+      color: var(--text-sec);
+      line-height: 1.75;
+    }
+    .free-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-m);
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: rgba(74,222,128,.1);
+      border: 1px solid rgba(74,222,128,.2);
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 12px;
+    }
+    .paid-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-m);
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-glow);
+      border: 1px solid rgba(212,245,60,.2);
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 12px;
+    }
+    .tier-strip {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .tier-strip-text h4 {
+      font-family: var(--font-d);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .tier-strip-text p {
+      font-size: 12px;
+      color: var(--text-sec);
+      line-height: 1.6;
+    }
+    .tier-strip-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── PRINT / PDF STYLESHEET ── */
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+
+      /* Hide everything except results */
+      .nav, .hero, .session-pills, #pill-hint-1, #pill-hint-2,
+      #s1-form, #s2-form, .progress-wrap, .err-box,
+      .result-actions, .report-actions, .report-cta, .cta-strip,
+      button, .btn-sm, .btn-primary, .btn-acc, .nav-cta,
+      #s2-form, #session-2 .result-header + *,
+      .section-divider { display: none !important; }
+
+      html, body {
+        background: #080808 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 10pt !important;
+        width: 100% !important;
+      }
+
+      .wrap {
+        max-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important;
+      }
+
+      .session { display: block !important; }
+      .result-wrap.active { display: block !important; }
+      .simulation-output.active { display: block !important; }
+
+      /* Result header */
+      .result-header {
+        padding: 14px 20px !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+      }
+      .result-company { font-size: 18pt !important; }
+      .result-meta { font-size: 8pt !important; }
+      .result-bar { padding: 6px 20px !important; font-size: 7pt !important; }
+
+      /* Metrics strip */
+      .metrics {
+        display: grid !important;
+        grid-template-columns: repeat(3,1fr) !important;
+        page-break-inside: avoid !important;
+      }
+      .metric { padding: 10px 14px !important; }
+      .metric-val { font-size: 14pt !important; }
+      .metric-lbl { font-size: 7pt !important; }
+
+      /* Report sections — each on its own block, no overflow */
+      .rsections {
+        padding: 14px 20px !important;
+        gap: 14px !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      .rsections > div {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+      }
+
+      .rlabel { font-size: 7pt !important; }
+      .rtext { font-size: 9.5pt !important; line-height: 1.5 !important; }
+      .ev-item { font-size: 9.5pt !important; }
+
+      /* Math and assumption tables */
+      .asm-table, .math-box {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+        width: 100% !important;
+      }
+      .asm-row { padding: 6px 12px !important; font-size: 9pt !important; }
+      .math-row { font-size: 9.5pt !important; }
+
+      /* Opportunity badge */
+      .opp-badge {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        padding: 12px 16px !important;
+      }
+      .opp-num { font-size: 20pt !important; }
+      .opp-lbl { font-size: 9pt !important; }
+
+      /* Recommendations */
+      .rec-list { page-break-inside: avoid !important; }
+      .rec {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        padding: 8px 12px !important;
+        margin-bottom: 4px !important;
+      }
+      .rec-t { font-size: 9.5pt !important; }
+      .rec-d { font-size: 9pt !important; }
+
+      /* Unknown tags */
+      .unk-tags { page-break-inside: avoid !important; }
+
+      /* FORECAST SECTION — force page break before it */
+      .forecast-intro {
+        page-break-before: always !important;
+        break-before: page !important;
+        padding: 14px 18px !important;
+      }
+
+      /* Chart — fixed height, no overflow */
+      .chart-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        padding: 16px !important;
+        margin-bottom: 12px !important;
+        overflow: hidden !important;
+      }
+      .chart-wrap {
+        height: 240px !important;
+        max-height: 240px !important;
+        overflow: hidden !important;
+        position: relative !important;
+      }
+      .chart-wrap canvas {
+        max-height: 240px !important;
+        width: 100% !important;
+      }
+
+      /* Scenario cards */
+      .scenario-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4,1fr) !important;
+        gap: 6px !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 12px !important;
+      }
+      .sc { padding: 8px 10px !important; }
+      .sc-val { font-size: 11pt !important; }
+      .sc-lbl { font-size: 7pt !important; }
+
+      /* Key insight */
+      .key-insight {
+        page-break-inside: avoid !important;
+        padding: 12px 16px !important;
+        margin-bottom: 12px !important;
+      }
+
+      /* Debate section — page break before */
+      .debate-wrap {
+        page-break-before: always !important;
+        break-before: page !important;
+        overflow: hidden !important;
+      }
+      .debate-head { padding: 12px 18px !important; }
+      .debate-body { padding: 12px 18px !important; gap: 10px !important; }
+      .debate-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        padding: 8px 12px !important;
+        margin-bottom: 6px !important;
+      }
+      .debate-round-lbl { font-size: 8pt !important; }
+      .dp-arg { font-size: 9pt !important; line-height: 1.5 !important; }
+      .consensus {
+        page-break-inside: avoid !important;
+        padding: 10px 12px !important;
+      }
+      .con-text { font-size: 9pt !important; }
+
+      /* Disclaimer */
+      .disclaimer {
+        font-size: 7pt !important;
+        padding: 8px 16px !important;
+        page-break-inside: avoid !important;
+      }
+
+      /* Page settings */
+      @page {
+        size: A4 portrait;
+        margin: 12mm 14mm 12mm 14mm;
+      }
+    }
+    
+
+    /* FlowForge Revenue Diagnostic v3 — light visual system */
+    :root{--black:#ffffff;--off-black:#f6f7f2;--surface:#ffffff;--surface-2:#f3f8dc;--border:#e4e9d7;--border-lt:#cbd5b7;--accent:#d8ed79;--accent-glow:rgba(216,237,121,.18);--accent-soft:rgba(216,237,121,.25);--text-pri:#26351a;--text-sec:#667052;--text-muted:#899276;--red:#c65345;--orange:#c47b2a;--green:#477b42;--blue:#477b9b;}
+    body{background:#fff;color:var(--text-pri)}
+    .nav{background:rgba(255,255,255,.96);border-bottom-color:var(--border)}
+    .hero{background:linear-gradient(180deg,#f3f8dc 0%,#fff 88%)}
+    .hero-grid{opacity:.10}
+    .nav-cta,.run-btn{background:var(--accent);color:#26351a}
+    .card,.result-body,.chart-card,.debate-wrap,.err-box{background:#fff;border-color:var(--border);box-shadow:0 8px 28px rgba(38,53,26,.045)}
+    .card-head,.result-header,.chart-summary-box,.scenario-grid .sc,.key-insight,.debate-head{background:#f7faec}
+    .result-bar{background:#f3f8dc;color:#52653a;border-color:var(--border)}
+    .fg input,.fg select{background:#fff;color:var(--text-pri);border-color:var(--border-lt)}
+    .fg select option{background:#fff;color:var(--text-pri)}
+    .fg label,.opt-divider,.metric-lbl,.rlabel,.progress-step-label{color:#788263}
+    .progress-bar-bg{background:#eef2e4;border-color:var(--border)}
+    .progress-step-dot{background:#dce4c9}
+    .result-meta,.result-bar span{color:#7a8468}
+    .btn-sm{color:var(--text-pri);border-color:var(--border-lt)}
+    .btn-acc{color:#52653a;border-color:#cbd5a4;background:#f7faec}
+    .cta-strip{background:#f3f8dc;border-color:var(--border)}
+    .chart-wrap{background:#fff}
+    .logo{color:#26351a}
+    .logo img{height:34px;width:34px;object-fit:contain;background:#fff;border-radius:6px}
+    .paid-badge,.free-badge{display:none!important}
+    @media(max-width:640px){.nav{padding:0 16px}.hero{padding-top:96px}.card-body{padding:20px}.card-head{padding:18px 20px}}
+
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="https://flowforgerevenue.solutions" class="logo">
+    <img src="ffr-logo.png" alt="FFR" />
+    FlowForge <span class="logo-acc">Revenue</span>
+  </a>
+  <div class="nav-links">
+    <a href="https://flowforgerevenue.solutions" class="nav-link">Home</a>
+    <a href="https://flowforgerevenue.solutions/work.html" class="nav-link">Work</a>
+    <a href="https://flowforgerevenue.solutions/research.html" class="nav-link">Research</a>
+    <a href="https://flowforgerevenue.solutions/services.html" class="nav-link">Services</a>
+  </div>
+  <a href="#s1-form" class="nav-cta">Run Your Revenue Diagnostic →</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-grid"></div>
+  <h1>Find what is holding your fintech revenue back.<br/><span class="acc">Understand the opportunity.</span></h1>
+  <p class="hero-sub">Identify potential revenue friction, quantify illustrative opportunities and explore financial scenarios with a diagnostic built for B2B fintech companies.</p>
+  <p style="font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;">Select your audit type</p>
+  <div class="session-pills">
+    <div class="pill active" onclick="showSession(1)" id="pill-1">
+      <div class="pill-dot"></div>
+      Revenue Audit & Forecast
+    </div>
+    <div class="pill" onclick="showSession(2)" id="pill-2">
+      <div class="pill-dot"></div>
+      Upload Financial Document
+    </div>
+  </div>
+  <div style="margin-top:16px;max-width:520px;margin-left:auto;margin-right:auto;">
+    <p style="font-size:13px;color:var(--text-sec);line-height:1.7;" id="pill-hint-1">
+      <strong style="color:var(--text-pri);">Start here if you want us to review your public funnel.</strong>
+      Identify potential friction, explore illustrative revenue opportunities, and compare five-year scenarios.
+    </p>
+    <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-top:8px;" id="pill-hint-2">
+      Already have revenue data, a financial report, or an audit document?
+      <span style="color:var(--accent);cursor:pointer;" onclick="showSession(2)">Switch to Upload →</span>
+    </p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SESSION 1: AUDIT + SIMULATION             -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="session active" id="session-1">
+
+    <!-- INPUT FORM -->
+    <div class="card" id="s1-form">
+      <div class="card-head">
+        <h2>Revenue Audit & 5-Year Forecast</h2>
+        <p>We review observable public-facing evidence, identify potential revenue friction, quantify illustrative opportunities using stated assumptions, and model five-year scenarios.</p>
+      </div>
+      <div class="card-body">
+
+        <div class="grid-2">
+          <div class="fg span-2">
+            <label>Company Website URL <span style="color:var(--red)">*</span></label>
+            <input type="url" id="s1-url" placeholder="https://yourcompany.com" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="fg">
+            <label>Company Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="s1-company" placeholder="Acme Payments" />
+          </div>
+          <div class="fg">
+            <label>Funding Stage <span style="color:var(--red)">*</span></label>
+            <select id="s1-stage">
+              <option value="" disabled selected>Select stage</option>
+              <option value="Pre-Seed">Pre-Seed</option>
+              <option value="Seed">Seed</option>
+              <option value="Series A">Series A</option>
+              <option value="Series B">Series B</option>
+              <option value="Growth / Series C+">Growth / Series C+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="fg">
+            <label>Work email <span class="opt">(OPTIONAL)</span></label>
+            <input type="email" id="s1-email" placeholder="you@company.com (optional)" autocomplete="email" />
+          </div>
+          <div class="fg">
+            <label>Estimated ACV <span style="color:var(--red)">*</span></label>
+            <select id="s1-acv">
+              <option value="" disabled selected>Select ACV range</option>
+              <option value="5000">Under $10K</option>
+              <option value="15000">$10K – $25K</option>
+              <option value="40000">$25K – $60K</option>
+              <option value="100000">$60K – $150K</option>
+              <option value="200000">$150K+</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Est. Current Annual Revenue (USD) <span style="color:var(--red)">*</span></label>
+            <input type="number" id="s1-revenue" placeholder="e.g. 1200000" min="0" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="fg">
+            <label>Funnel Focus Area</label>
+            <select id="s1-focus">
+              <option value="full funnel">Full funnel scan</option>
+              <option value="homepage positioning">Homepage positioning</option>
+              <option value="demo or contact page">Demo / Contact page</option>
+              <option value="pricing page">Pricing page</option>
+              <option value="onboarding flow">Onboarding flow</option>
+              <option value="checkout flow">Checkout flow</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Industry / Product Type</label>
+            <select id="s1-industry">
+              <option value="B2B fintech">B2B Fintech (general)</option>
+              <option value="payment infrastructure">Payment Infrastructure</option>
+              <option value="embedded finance">Embedded Finance / BaaS</option>
+              <option value="open banking API">Open Banking / API</option>
+              <option value="cross-border payments">Cross-border Payments</option>
+              <option value="card issuing">Card Issuing</option>
+              <option value="fintech SaaS">Fintech SaaS</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="opt-divider">Optional — improves accuracy</div>
+
+        <div class="grid-3">
+          <div class="fg">
+            <label>Monthly Demo Volume <span class="opt">(optional)</span></label>
+            <input type="number" id="s1-demos" placeholder="e.g. 40" min="1" />
+          </div>
+          <div class="fg">
+            <label>Current Close Rate % <span class="opt">(optional)</span></label>
+            <input type="number" id="s1-close" placeholder="e.g. 12" min="1" max="100" />
+          </div>
+          <div class="fg">
+            <label>Monthly Qualified Traffic <span class="opt">(optional)</span></label>
+            <input type="number" id="s1-traffic" placeholder="e.g. 500" min="1" />
+          </div>
+        </div>
+
+        <button class="run-btn" id="s1-btn" onclick="runFullAudit()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Run Your Revenue Diagnostic
+        </button>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap" id="s1-progress">
+      <div class="progress-label">
+        <span id="progress-label-text">Auditing your funnel...</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="progress-steps">
+        <div class="progress-step" id="ps-1"><div class="progress-step-dot"></div><div class="progress-step-label">Reviewing public funnel</div></div>
+        <div class="progress-step" id="ps-2"><div class="progress-step-dot"></div><div class="progress-step-label">Identifying revenue leak</div></div>
+        <div class="progress-step" id="ps-3"><div class="progress-step-dot"></div><div class="progress-step-label">Building opportunity model</div></div>
+        <div class="progress-step" id="ps-4"><div class="progress-step-dot"></div><div class="progress-step-label">Running revenue forecast</div></div>
+        <div class="progress-step" id="ps-5"><div class="progress-step-dot"></div><div class="progress-step-label">Compiling your report</div></div>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="err-box" id="s1-error">
+      <div class="err-title">Could not complete the audit</div>
+      <div class="err-msg" id="s1-err-msg"></div>
+      <button class="btn-sm" onclick="resetS1()">Try Again</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="result-wrap" id="s1-result">
+
+      <!-- AUDIT RESULT HEADER -->
+      <div class="result-header">
+        <div>
+          <div class="result-company" id="r-company"></div>
+          <div class="result-meta" id="r-meta"></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn-sm" onclick="resetS1()">New Audit</button>
+          <button class="btn-sm btn-acc" onclick="exportExcel()" style="background:var(--surface-2);color:var(--text-sec);">📊 Excel</button>
+          <button class="btn-sm btn-acc" onclick="handlePDFDownload()">⬇ PDF Report</button>
+        </div>
+      </div>
+      <div class="result-bar">
+        <span>FlowForge Revenue Quantification Framework v3.1</span>
+        <span>Revenue Opportunity = QV × FR × DCR × SQLR × CR × ACV</span>
+      </div>
+      <div class="result-body">
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-lbl">Illustrative Annual Opportunity</div>
+            <div class="metric-val" id="r-opp"></div>
+            <div class="metric-sub">From fixing identified leak</div>
+          </div>
+          <div class="metric">
+            <div class="metric-lbl">Leak Identified</div>
+            <div class="metric-val" id="r-leak" style="font-size:14px;padding-top:3px;line-height:1.3;"></div>
+            <div class="metric-sub" id="r-area"></div>
+          </div>
+          <div class="metric">
+            <div class="metric-lbl">Confidence Rating</div>
+            <div class="metric-val" id="r-conf" style="font-size:18px;padding-top:3px;"></div>
+            <div class="metric-sub" id="r-conf-reason"></div>
+          </div>
+        </div>
+
+        <div class="rsections" id="r-sections"></div>
+
+        <hr class="section-divider" style="margin:0 28px 28px;" />
+
+        <!-- FORECAST INTRO -->
+        <div style="padding:0 28px 0;">
+          <div class="forecast-intro">
+            <h3>What does the next 5 years look like?</h3>
+            <p>Below is a revenue forecast modelled across four trajectories — what happens if the leak goes unfixed, and what happens across three recovery scenarios if you address it. The gap between the status quo line and the fix scenarios is the compounding cost of inaction.</p>
+          </div>
+        </div>
+
+        <!-- CHART -->
+        <div style="padding:0 28px 20px;">
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-ttl" id="chart-ttl"></div>
+            <div class="chart-sub">Revenue projections in USD · All figures illustrative using stated assumptions</div>
+            <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
+          </div>
+          <div class="chart-summary-box" style="margin-top:12px;">
+            <div class="cs-label">📖 How To Read The Four Lines</div>
+            <div class="cs-text" id="chart-summary-text">
+              <p><strong style="color:var(--red);">Status Quo — red dashed line.</strong> This is the trajectory if the identified revenue friction remains unresolved. It assumes 3% annual growth, so it represents the business continuing on its current path without a targeted recovery effort.</p>
+              <p style="margin-top:10px;"><strong style="color:var(--orange);">Conservative — orange line.</strong> This shows the outcome of a cautious recovery, using an 18% annual growth assumption after addressing the identified friction.</p>
+              <p style="margin-top:10px;"><strong style="color:var(--accent);">Base Case — lime line.</strong> This represents the expected recovery scenario, using a 35% annual growth assumption when the recommended fix is implemented effectively.</p>
+              <p style="margin-top:10px;"><strong style="color:var(--green);">Full Upside — green line.</strong> This represents the highest modeled recovery path at 70% annual growth. In plain commercial terms, the widening gap between these lines shows the value of changing the revenue trajectory earlier rather than allowing the opportunity cost to compound.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENARIO CARDS -->
+        <div style="padding:0 28px 20px;">
+          <div class="scenario-grid">
+            <div class="sc sc-status-quo">
+              <div class="sc-lbl">Status Quo (No Fix)</div>
+              <div class="sc-val" id="sc-sq"></div>
+              <div class="sc-note">5-yr cumulative · leak continues</div>
+            </div>
+            <div class="sc sc-conservative">
+              <div class="sc-lbl">Conservative Fix</div>
+              <div class="sc-val" id="sc-con"></div>
+              <div class="sc-note">5-yr cumulative · cautious recovery</div>
+            </div>
+            <div class="sc sc-base">
+              <div class="sc-lbl">Base Case Fix</div>
+              <div class="sc-val" id="sc-base"></div>
+              <div class="sc-note">5-yr cumulative · expected recovery</div>
+            </div>
+            <div class="sc sc-aggressive">
+              <div class="sc-lbl">Full Upside Fix</div>
+              <div class="sc-val" id="sc-agg"></div>
+              <div class="sc-note">5-yr cumulative · full potential</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KEY INSIGHT -->
+        <div style="padding:0 28px 20px;">
+          <div class="key-insight">
+            <div class="ki-lbl">Key Forecast Insight</div>
+            <div class="ki-text" id="ki-text"></div>
+          </div>
+        </div>
+
+        <!-- DEBATE PERSPECTIVES -->
+        <div style="padding:0 28px 20px;">
+          <div class="debate-wrap">
+            <div class="debate-head">
+              <h3>Three Perspectives on This Opportunity</h3>
+              <p>A CFO, a growth investor, and a fintech buyer each weigh in on what fixing this leak means for the business — and where they agree and disagree.</p>
+            </div>
+            <div class="debate-body" id="debate-body"></div>
+          </div>
+        </div>
+
+        <div class="disclaimer" id="r-disclaimer">
+          All figures are illustrative estimates based on benchmark assumptions for B2B fintech companies at the stated stage. This report does not claim actual revenue loss — only potential opportunity using stated inputs. All assumptions are listed explicitly and adjustable with real company data. Powered by FlowForge Revenue Quantification Framework v3.1.
+        </div>
+
+        <div style="padding:0 28px 28px;">
+          <div class="cta-strip">
+            <p><strong>Your complete report.</strong> Get the complete audit findings, all 3 recommendations, the full 5-year forecast, three-perspectives simulation, PDF download, and Excel export.</p>
+            <a href="javascript:document.getElementById('s1-form')?.scrollIntoView({behavior:'smooth'})" target="_blank" class="btn-primary">Download Your Report</a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.result-wrap -->
+  </div><!-- /#session-1 -->
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SESSION 2: DOCUMENT UPLOAD                -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="session" id="session-2">
+
+    <div class="card" id="s2-form">
+      <div class="card-head">
+        <h2>Upload a Document for Revenue Forecasting</h2>
+        <p>Already have a revenue report, financial statement, audit, or data export? Upload it and get a 5-year revenue forecast with three perspectives on what the numbers mean for your growth trajectory.</p>
+      </div>
+      <div class="card-body">
+
+        <div class="upload-zone" id="upload-zone"
+          ondragover="this.classList.add('over');event.preventDefault();"
+          ondragleave="this.classList.remove('over');"
+          ondrop="this.classList.remove('over');handleDrop(event);">
+          <input type="file" id="file-input" accept=".pdf,.xlsx,.xls,.csv,.txt" onchange="handleFile(this.files[0])" />
+          <div class="uicon">📄</div>
+          <div class="utitle">Drop your document here or click to browse</div>
+          <div class="usub">Financial statements · Revenue reports · Audit documents · Data exports</div>
+          <div class="uaccept">PDF · Excel (.xlsx / .xls) · CSV · TXT</div>
+        </div>
+
+        <div class="ufile" id="ufile-info">
+          <span class="ufile-name" id="ufile-name"></span>
+          <span class="ufile-rm" onclick="clearUpload()">×</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="fg">
+            <label>Company Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="s2-company" placeholder="Acme Payments" />
+          </div>
+          <div class="fg">
+            <label>Funding Stage</label>
+            <select id="s2-stage">
+              <option value="Seed">Seed</option>
+              <option value="Series A" selected>Series A</option>
+              <option value="Series B">Series B</option>
+              <option value="Growth / Series C+">Growth / Series C+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="fg">
+            <label>Work email <span class="opt">(OPTIONAL)</span></label>
+            <input type="email" id="s2-email" placeholder="you@company.com (optional)" autocomplete="email" />
+          </div>
+          <div class="fg">
+            <label>Estimated ACV</label>
+            <select id="s2-acv">
+              <option value="5000">Under $10K</option>
+              <option value="15000" selected>$10K – $25K</option>
+              <option value="40000">$25K – $60K</option>
+              <option value="100000">$60K – $150K</option>
+              <option value="200000">$150K+</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Est. Current Annual Revenue (USD)</label>
+            <input type="number" id="s2-revenue" placeholder="e.g. 1200000" min="0" />
+          </div>
+        </div>
+
+        <button class="run-btn" id="s2-btn" onclick="runDocSimulation()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Run Revenue Forecast from Document
+        </button>
+      </div>
+    </div>
+
+    <!-- PROGRESS S2 -->
+    <div class="progress-wrap" id="s2-progress">
+      <div class="progress-label">
+        <span id="s2-progress-text">Analysing your document...</span>
+        <span id="s2-progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="s2-progress-fill"></div></div>
+      <div class="progress-steps">
+        <div class="progress-step" id="s2-ps-1"><div class="progress-step-dot"></div><div class="progress-step-label">Extracting document data</div></div>
+        <div class="progress-step" id="s2-ps-2"><div class="progress-step-dot"></div><div class="progress-step-label">Identifying revenue patterns</div></div>
+        <div class="progress-step" id="s2-ps-3"><div class="progress-step-dot"></div><div class="progress-step-label">Modelling scenarios</div></div>
+        <div class="progress-step" id="s2-ps-4"><div class="progress-step-dot"></div><div class="progress-step-label">Building 5-year forecast</div></div>
+        <div class="progress-step" id="s2-ps-5"><div class="progress-step-dot"></div><div class="progress-step-label">Compiling report</div></div>
+      </div>
+    </div>
+
+    <!-- ERROR S2 -->
+    <div class="err-box" id="s2-error">
+      <div class="err-title">Forecast could not be completed</div>
+      <div class="err-msg" id="s2-err-msg"></div>
+      <button class="btn-sm" onclick="resetS2()">Try Again</button>
+    </div>
+
+    <!-- S2 RESULT — same layout as S1 forecast section -->
+    <div class="result-wrap" id="s2-result">
+
+      <div class="result-header">
+        <div>
+          <div class="result-company" id="s2-r-company"></div>
+          <div class="result-meta" id="s2-r-meta"></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn-sm" onclick="resetS2()">New Forecast</button>
+          <button class="btn-sm btn-acc" onclick="exportExcel()">📊 Excel Report</button>
+          <button class="btn-sm btn-acc" onclick="handlePDFDownload()">⬇ Download PDF</button>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <!-- Chart -->
+        <div class="chart-card">
+          <div class="chart-ttl" id="s2-chart-ttl"></div>
+          <div class="chart-sub">Revenue projections in USD · Based on uploaded document · All figures illustrative</div>
+          <div class="chart-wrap"><canvas id="s2-rev-chart"></canvas></div>
+        </div>
+
+        <!-- Chart line explanation -->
+        <div class="chart-summary-box" style="margin-bottom:12px;">
+          <div class="cs-label">📖 How To Read The Four Lines</div>
+          <div class="cs-text" id="s2-chart-summary-text" style="font-size:12.5px;">
+            <p><strong style="color:var(--red);">Status Quo — red dashed line.</strong> This is the trajectory if no corrective action is taken. It uses 3% annual growth and represents the cost of allowing the current revenue path to continue.</p>
+            <p style="margin-top:10px;"><strong style="color:var(--orange);">Conservative — orange line.</strong> This models a lower realization of the identified opportunity.</p>
+            <p style="margin-top:10px;"><strong style="color:var(--accent);">Base Case — lime line.</strong> This models a central realization scenario, based on the stated assumptions.</p>
+            <p style="margin-top:10px;"><strong style="color:var(--green);">Full Upside — green line.</strong> This models a higher realization scenario. These are scenario calculations, not predictions or guaranteed outcomes.</p>
+          </div>
+        </div>
+
+        <!-- Scenarios -->
+        <div class="scenario-grid">
+          <div class="sc sc-status-quo">
+            <div class="sc-lbl">Status Quo (No Change)</div>
+            <div class="sc-val" id="s2-sc-sq"></div>
+            <div class="sc-note">5-yr cumulative</div>
+          </div>
+          <div class="sc sc-conservative">
+            <div class="sc-lbl">Conservative</div>
+            <div class="sc-val" id="s2-sc-con"></div>
+            <div class="sc-note">5-yr cumulative</div>
+          </div>
+          <div class="sc sc-base">
+            <div class="sc-lbl">Base Case</div>
+            <div class="sc-val" id="s2-sc-base"></div>
+            <div class="sc-note">5-yr cumulative</div>
+          </div>
+          <div class="sc sc-aggressive">
+            <div class="sc-lbl">Full Upside</div>
+            <div class="sc-val" id="s2-sc-agg"></div>
+            <div class="sc-note">5-yr cumulative</div>
+          </div>
+        </div>
+
+        <!-- Key insight -->
+        <div class="key-insight">
+          <div class="ki-lbl">Key Forecast Insight</div>
+          <div class="ki-text" id="s2-ki-text"></div>
+        </div>
+
+        <!-- Debate -->
+        <div class="debate-wrap">
+          <div class="debate-head">
+            <h3>Three Perspectives on Your Revenue Data</h3>
+            <p>A CFO, a growth investor, and a fintech buyer each interpret your document and weigh in on what the numbers mean for your next five years.</p>
+          </div>
+          <div class="debate-body" id="s2-debate-body"></div>
+        </div>
+
+        <div style="font-family:var(--font-m);font-size:9px;color:var(--text-muted);line-height:1.7;margin:16px 0;padding:12px 16px;border:1px solid var(--border);border-radius:var(--r-sm);">
+          All scenarios are illustrative estimates based on extracted financial information and stated assumptions. They are not predictions or financial advice. Powered by FlowForge Revenue Quantification Framework v3.1.
+        </div>
+
+        <div class="cta-strip">
+          <p><strong>Your complete forecast and exports are ready.</strong> Get the complete three-perspectives debate, PDF download, and Excel 5-year forecast export.</p>
+          <a href="javascript:document.getElementById('s1-form')?.scrollIntoView({behavior:'smooth'})" target="_blank" class="btn-primary">Download Your Report</a>
+        </div>
+      </div>
+
+    </div><!-- /#s2-result -->
+  </div><!-- /#session-2 -->
+
+</div><!-- /.wrap -->
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+// Public product: no payments, entitlements, account requirement or run cap.
+const IS_ADMIN = false;
+
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+const BENCHMARKS = {
+  'Pre-Seed':           {dcr:.06,sqlr:.40,cr:.07,fr:.12},
+  'Seed':               {dcr:.08,sqlr:.45,cr:.09,fr:.12},
+  'Series A':           {dcr:.10,sqlr:.50,cr:.12,fr:.12},
+  'Series B':           {dcr:.14,sqlr:.55,cr:.18,fr:.12},
+  'Growth / Series C+': {dcr:.18,sqlr:.60,cr:.24,fr:.12},
+};
+
+// Global state
+const S = {
+  auditData: null,
+  simData: null,
+  docSimData: null,
+  uploadedContent: null,
+  uploadedType: null,
+  chart1: null,
+  chart2: null,
+};
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function fc(n) {
+  if (!n && n!==0) return 'N/A';
+  if (n>=1e9) return '$'+(n/1e9).toFixed(1)+'B';
+  if (n>=1e6) return '$'+(n/1e6).toFixed(1)+'M';
+  if (n>=1e3) return '$'+Math.round(n/1e3)+'K';
+  return '$'+Math.round(n).toLocaleString();
+}
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function showSession(n) {
+  document.querySelectorAll('.session').forEach((s,i)=>s.classList.toggle('active',i+1===n));
+  document.querySelectorAll('.pill').forEach((p,i)=>p.classList.toggle('active',i+1===n));
+  const h1 = document.getElementById('pill-hint-1');
+  const h2 = document.getElementById('pill-hint-2');
+  if (!h1||!h2) return;
+  if (n===1) {
+    h1.innerHTML = '<strong style="color:var(--text-pri);">Review your public funnel.</strong> Identify observable friction, explore illustrative revenue opportunities, and compare five-year scenarios.';
+    h2.innerHTML = 'Already have revenue data, a financial report, or an audit document? <span style="color:var(--accent);cursor:pointer;" onclick="showSession(2)">Switch to Upload →</span>';
+  } else {
+    h1.innerHTML = '<strong style="color:var(--text-pri);">Upload a financial statement, revenue report, or audit document.</strong> We run three revenue perspectives on your data and produce a 5-year forecast based on what your numbers show.';
+    h2.innerHTML = 'Don’t have a document yet? <span style="color:var(--accent);cursor:pointer;" onclick="showSession(1)">Start with the funnel audit instead →</span>';
+  }
+}
+
+function setProgress(pct, label, stepNum) {
+  const fill = document.getElementById('progress-fill');
+  const pctEl = document.getElementById('progress-pct');
+  const lbl = document.getElementById('progress-label-text');
+  if (fill) fill.style.width = pct+'%';
+  if (pctEl) pctEl.textContent = pct+'%';
+  if (lbl && label) lbl.textContent = label;
+  for (let i=1;i<=5;i++) {
+    const el = document.getElementById('ps-'+i);
+    if (!el) continue;
+    el.className = i<stepNum?'progress-step done':i===stepNum?'progress-step active':'progress-step';
+  }
+}
+
+function setProgressS2(pct, label, stepNum) {
+  const fill = document.getElementById('s2-progress-fill');
+  const pctEl = document.getElementById('s2-progress-pct');
+  const lbl = document.getElementById('s2-progress-text');
+  if (fill) fill.style.width = pct+'%';
+  if (pctEl) pctEl.textContent = pct+'%';
+  if (lbl && label) lbl.textContent = label;
+  for (let i=1;i<=5;i++) {
+    const el = document.getElementById('s2-ps-'+i);
+    if (!el) continue;
+    el.className = i<stepNum?'progress-step done':i===stepNum?'progress-step active':'progress-step';
+  }
+}
+
+function calcModel(stage, acv, fr, userClose, userTraffic) {
+  const b = BENCHMARKS[stage]||BENCHMARKS['Series A'];
+  const qv = parseInt(userTraffic)||100;
+  const cr = userClose ? parseFloat(userClose)/100 : b.cr;
+  const friction = fr||b.fr;
+  const affected = Math.round(qv*friction);
+  const lostDemos = Math.round(affected*b.dcr*10)/10;
+  const lostSQLs = Math.round(lostDemos*b.sqlr*10)/10;
+  const lostDeals = Math.round(lostSQLs*cr*100)/100;
+  const low = Math.round(lostDeals*parseInt(acv)*0.8)*12;
+  const high = Math.round(lostDeals*parseInt(acv)*1.3)*12;
+  return {qv,fr:friction,dcr:b.dcr,sqlr:b.sqlr,cr,affected,lostDemos,lostSQLs,lostDeals,oppLow:low,oppHigh:high,b};
+}
+
+// ═══════════════════════════════════════════
+// SESSION 1: FULL AUDIT + SIMULATION
+// ═══════════════════════════════════════════
+async function runFullAudit() {
+  const url     = document.getElementById('s1-url').value.trim();
+  const company = document.getElementById('s1-company').value.trim();
+  const stage   = document.getElementById('s1-stage').value;
+  const acv     = document.getElementById('s1-acv').value;
+  const revenue = document.getElementById('s1-revenue').value;
+  const focus   = document.getElementById('s1-focus').value;
+  const industry= document.getElementById('s1-industry').value;
+  const demos   = document.getElementById('s1-demos').value;
+  const close   = document.getElementById('s1-close').value;
+  const traffic = document.getElementById('s1-traffic').value;
+
+  if (!url||!company||!stage||!acv||!revenue) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  document.getElementById('s1-form').style.display='none';
+  document.getElementById('s1-progress').classList.add('active');
+  document.getElementById('s1-error').className='err-box';
+  document.getElementById('s1-result').className='result-wrap';
+  document.getElementById('s1-btn').disabled=true;
+
+  try {
+    // STEP 1 — Audit
+    setProgress(10,'Reviewing your public funnel...',1);
+    const auditRes = await fetch(`${API}/api/audit`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url,company,stage,acv,focus,industry,demos,closeRate:close,traffic}),
+    });
+    const auditData = await auditRes.json();
+    if (!auditRes.ok||!auditData.success) throw new Error(auditData.error||'Audit failed');
+    S.auditData = auditData;
+
+    setProgress(45,'Modelling revenue opportunity...',2);
+    await new Promise(r=>setTimeout(r,600));
+
+    // STEP 2 — Simulation
+    setProgress(60,'Running revenue forecast...',3);
+    const auditContext = JSON.stringify(auditData.audit);
+    const simRes = await fetch(`${API}/api/simulate`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({company,stage,acv,currentRevenue:revenue,auditContext}),
+    });
+    const simData = await simRes.json();
+    if (!simRes.ok||!simData.success) throw new Error(simData.error||'Simulation failed');
+    S.simData = simData.simulation;
+
+    setProgress(85,'Building your 5-year forecast...',4);
+    await new Promise(r=>setTimeout(r,500));
+
+    setProgress(100,'Compiling your report...',5);
+    await new Promise(r=>setTimeout(r,400));
+
+    document.getElementById('s1-progress').classList.remove('active');
+    renderS1Result(auditData, simData.simulation, company, stage, acv, revenue);
+    if (!IS_ADMIN) {
+      applyPaidGates();
+    }
+
+  } catch(err) {
+    document.getElementById('s1-progress').classList.remove('active');
+    document.getElementById('s1-error').classList.add('active');
+    document.getElementById('s1-err-msg').textContent = err.message||'Something went wrong. If this keeps happening, the AI model may be temporarily unavailable.';
+    document.getElementById('s1-btn').disabled=false;
+  }
+}
+
+function renderS1Result(audit, sim, company, stage, acv, revenue) {
+  const m = calcModel(stage, acv, audit.audit?.friction_rate, document.getElementById('s1-close').value, document.getElementById('s1-traffic').value);
+  const a = audit.audit||{};
+  const f = sim.forecast||{};
+  const years = f.years||[];
+
+  // Header
+  document.getElementById('r-company').textContent = company;
+  document.getElementById('r-meta').textContent = `${audit.url} · ${stage} · ACV ~${fc(parseInt(acv))} · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+
+  // Metrics
+  document.getElementById('r-opp').textContent = `${fc(m.oppLow)}–${fc(m.oppHigh)}`;
+  document.getElementById('r-leak').textContent = a.leak_title||'';
+  document.getElementById('r-area').textContent = [a.leak_funnel_area, a.leak_category].filter(Boolean).join(' · ')||'';
+  const conf = (a.confidence||'Medium').toLowerCase();
+  const confEl = document.getElementById('r-conf');
+  confEl.textContent = a.confidence||'Medium';
+  confEl.className = 'metric-val c'+conf[0];
+  document.getElementById('r-conf-reason').textContent = a.confidence_reason||'';
+
+  // Sections
+  let html = '';
+
+  html += `<div><div class="rlabel">01 · What We Found</div>
+    <div class="ev-list">${(a.evidence||[]).map(e=>`<div class="ev-item">${e}</div>`).join('')}</div>
+  </div>`;
+
+  html += `<div><div class="rlabel">02 · Why It Matters</div>
+    <div class="rtext">${a.why_it_matters||''}</div>
+  </div>`;
+
+  html += `<div><div class="rlabel">04 · The Model — All Assumptions Listed</div>
+    <div class="asm-table">
+      <div class="asm-row"><span class="asm-k">Qualified Visitors (QV)</span><span class="asm-v">${m.qv}/month</span></div>
+      <div class="asm-row"><span class="asm-k">Friction Rate (FR)</span><span class="asm-v">${(m.fr*100).toFixed(0)}% affected</span></div>
+      <div class="asm-row"><span class="asm-k">Demo Conversion (DCR)</span><span class="asm-v">${(m.dcr*100).toFixed(0)}% — ${stage} benchmark</span></div>
+      <div class="asm-row"><span class="asm-k">SQL Rate (SQLR)</span><span class="asm-v">${(m.sqlr*100).toFixed(0)}% — ${stage} benchmark</span></div>
+      <div class="asm-row"><span class="asm-k">Close Rate (CR)</span><span class="asm-v">${(m.cr*100).toFixed(0)}%</span></div>
+      <div class="asm-row"><span class="asm-k">ACV</span><span class="asm-v">${fc(parseInt(acv))}</span></div>
+    </div>
+  </div>`;
+
+  html += `<div><div class="rlabel">05 · The Calculation</div>
+    <div class="math-box">
+      <div class="math-row"><span class="marrow">·</span>${m.qv} qualified monthly visitors</div>
+      <div class="math-row"><span class="marrow">↓</span>${m.affected} affected by this leak (${(m.fr*100).toFixed(0)}% FR)</div>
+      <div class="math-row"><span class="marrow">↓</span>${m.lostDemos} fewer demos/month</div>
+      <div class="math-row"><span class="marrow">↓</span>${m.lostSQLs} fewer SQLs/month</div>
+      <div class="math-row"><span class="marrow">↓</span>${m.lostDeals} fewer closed deals/month</div>
+      <div class="math-row res"><span class="marrow">→</span>${m.lostDeals} × ${fc(parseInt(acv))} × 12 = ${fc(m.oppLow)}–${fc(m.oppHigh)} illustrative annual opportunity</div>
+    </div>
+  </div>`;
+
+  html += `<div><div class="rlabel">06 · Illustrative Revenue Opportunity</div>
+    <div class="opp-badge">
+      <div class="opp-num">${fc(m.oppLow)}–${fc(m.oppHigh)}</div>
+      <div>
+        <div class="opp-lbl">Illustrative annual opportunity using benchmark assumptions for <strong>${stage}</strong> B2B fintech at <strong>${fc(parseInt(acv))} ACV</strong>. Adjust with real data to pressure-test.</div>
+        <div class="conf-badge c${conf[0]}"><div class="cdot"></div>Confidence: ${a.confidence||'Medium'} — ${a.confidence_reason||''}</div>
+      </div>
+    </div>
+  </div>`;
+
+  if ((a.unknown_variables||[]).length) {
+    html += `<div><div class="rlabel">07 · Unknown Variables — Plug In Your Real Numbers</div>
+      <div class="rtext" style="margin-bottom:8px;">Replace these with your actual data to refine the opportunity estimate.</div>
+      <div class="unk-tags">${a.unknown_variables.map(v=>`<span class="unk-tag">${v}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  html += `<div><div class="rlabel">08 · What To Fix — Ranked By Impact</div>
+    <div class="rec-list">${(a.recommendations||[]).map((r,i)=>`
+      <div class="rec">
+        <div class="rec-n">FIX ${i+1}</div>
+        <div><div class="rec-t">${esc(r.title)}</div><div class="rec-d">${esc(r.what||r.description||'')}${r.where?`<br><strong>Where:</strong> ${esc(r.where)}`:''}${r.why?`<br><strong>Why:</strong> ${esc(r.why)}`:''}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  document.getElementById('r-sections').innerHTML = html;
+
+  // Chart
+  document.getElementById('chart-ttl').textContent = `5-Year Revenue Forecast — ${company}`;
+  renderChart('rev-chart', years, 'chart1');
+
+  // Scenario cards
+  const s = f.summary||{};
+  document.getElementById('sc-sq').textContent = fc(s.status_quo_5yr||s.statusQuo_5yr||0);
+  document.getElementById('sc-con').textContent = fc(s.conservative_5yr||0);
+  document.getElementById('sc-base').textContent = fc(s.base_5yr||0);
+  document.getElementById('sc-agg').textContent = fc(s.aggressive_5yr||0);
+  document.getElementById('ki-text').textContent = s.key_insight || f.key_insight || '';
+
+  // Chart summary
+  const cst = document.getElementById('chart-summary-text');
+  if (cst && f.chart_summary) {
+    cst.querySelector('p:last-child')?.insertAdjacentHTML('beforeend', ` <span style="color:var(--text-pri);">${f.chart_summary}</span>`);
+  }
+
+  // Debate
+  document.getElementById('debate-body').innerHTML = buildDebateHTML(sim.debate||{});
+
+  document.getElementById('s1-result').classList.add('active');
+  document.getElementById('s1-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetS1() {
+  document.getElementById('s1-form').style.display='block';
+  document.getElementById('s1-progress').classList.remove('active');
+  document.getElementById('s1-error').className='err-box';
+  document.getElementById('s1-result').className='result-wrap';
+  document.getElementById('s1-btn').disabled=false;
+  setProgress(0,'',0);
+  if (S.chart1) { S.chart1.destroy(); S.chart1=null; }
+}
+
+// ═══════════════════════════════════════════
+// SESSION 2: DOCUMENT UPLOAD
+// ═══════════════════════════════════════════
+async function handleFile(file) {
+  if (!file) return;
+  document.getElementById('ufile-name').textContent = `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+  document.getElementById('ufile-info').classList.add('active');
+
+  try {
+    if (file.type==='text/csv'||file.type==='text/plain'||file.name.endsWith('.csv')) {
+      const text = await file.text();
+      S.uploadedContent = btoa(unescape(encodeURIComponent(text.substring(0,50000))));
+      S.uploadedType = 'text/csv';
+    } else if (file.name.endsWith('.xlsx')||file.name.endsWith('.xls')) {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf,{type:'array'});
+      let text='';
+      wb.SheetNames.slice(0,3).forEach(n=>{
+        const ws=wb.Sheets[n];
+        text+=`Sheet: ${n}\n${XLSX.utils.sheet_to_csv(ws)}\n\n`;
+      });
+      S.uploadedContent = btoa(unescape(encodeURIComponent(text.substring(0,50000))));
+      S.uploadedType = 'text/csv';
+    } else if (file.type==='application/pdf') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(new Uint8Array(buf)).promise;
+      let text='';
+      for (let i=1;i<=Math.min(pdf.numPages,50);i++) {
+        const page=await pdf.getPage(i);
+        const c=await page.getTextContent();
+        text+=c.items.map(x=>x.str).join(' ')+'\n';
+      }
+      S.uploadedContent = btoa(unescape(encodeURIComponent(text.substring(0,50000))));
+      S.uploadedType = 'application/pdf';
+    }
+  } catch(e) {
+    S.uploadedContent = btoa(`File: ${file.name}. Could not parse. Use for context.`);
+    S.uploadedType = 'text/plain';
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+
+function clearUpload() {
+  S.uploadedContent=null;
+  S.uploadedType=null;
+  document.getElementById('file-input').value='';
+  document.getElementById('ufile-info').classList.remove('active');
+}
+
+async function runDocSimulation() {
+  const company = document.getElementById('s2-company').value.trim();
+  const stage   = document.getElementById('s2-stage').value;
+  const acv     = document.getElementById('s2-acv').value;
+  const revenue = document.getElementById('s2-revenue').value;
+
+  if (!company) { alert('Please enter a company name.'); return; }
+  if (!S.uploadedContent) { alert('Please upload a document first.'); return; }
+
+  document.getElementById('s2-form').style.display='none';
+  document.getElementById('s2-progress').classList.add('active');
+  document.getElementById('s2-error').className='err-box';
+  document.getElementById('s2-result').className='result-wrap';
+  document.getElementById('s2-btn').disabled=true;
+
+  const steps=[
+    [10,'Extracting document data...',1,600],
+    [30,'Identifying revenue patterns...',2,800],
+    [55,'Modelling scenarios...',3,600],
+    [75,'Building 5-year forecast...',4,600],
+    [90,'Compiling report...',5,400],
+  ];
+  let delay=0;
+  steps.forEach(([pct,lbl,n,ms])=>{
+    delay+=ms;
+    setTimeout(()=>setProgressS2(pct,lbl,n),delay);
+  });
+
+  try {
+    const res = await fetch(`${API}/api/simulate`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType}),
+    });
+    const data = await res.json();
+    if (!res.ok||!data.success) throw new Error(data.error||'Forecast failed');
+    S.docSimData = data.simulation;
+
+    setProgressS2(100,'Report ready!',5);
+    await new Promise(r=>setTimeout(r,400));
+    document.getElementById('s2-progress').classList.remove('active');
+    renderS2Result(data.simulation, company, stage);
+
+  } catch(err) {
+    document.getElementById('s2-progress').classList.remove('active');
+    document.getElementById('s2-error').classList.add('active');
+    document.getElementById('s2-err-msg').textContent = err.message||'Something went wrong. Please try again.';
+    document.getElementById('s2-btn').disabled=false;
+  }
+}
+
+function renderS2Result(sim, company, stage) {
+  const f = sim.forecast||{};
+  const years = f.years||[];
+  const s = f.summary||{};
+  const key_insight = s.key_insight || f.key_insight || '';
+
+  document.getElementById('s2-r-company').textContent = company;
+  document.getElementById('s2-r-meta').textContent = `Document upload · ${stage} · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+  document.getElementById('s2-chart-ttl').textContent = `5-Year Revenue Forecast — ${company}`;
+
+  renderChart('s2-rev-chart', years, 'chart2');
+
+  document.getElementById('s2-sc-sq').textContent = fc(s.status_quo_5yr||s.statusQuo_5yr||0);
+  document.getElementById('s2-sc-con').textContent = fc(s.conservative_5yr||0);
+  document.getElementById('s2-sc-base').textContent = fc(s.base_5yr||0);
+  document.getElementById('s2-sc-agg').textContent = fc(s.aggressive_5yr||0);
+  document.getElementById('s2-ki-text').textContent = s.key_insight || f.key_insight || '';
+  const s2Summary = document.getElementById('s2-chart-summary-text');
+  if (s2Summary && f.chart_summary) {
+    s2Summary.querySelector('p:last-child')?.insertAdjacentHTML('beforeend', ` <span style="color:var(--text-pri);">${f.chart_summary}</span>`);
+  }
+  document.getElementById('s2-debate-body').innerHTML = buildDebateHTML(sim.debate||{});
+
+  document.getElementById('s2-result').classList.add('active');
+  document.getElementById('s2-result').scrollIntoView({behavior:'smooth',block:'start'});
+  if (!IS_ADMIN) applyS2PaidGates();
+}
+
+function resetS2() {
+  document.getElementById('s2-gate-overlay')?.remove();
+  document.getElementById('s2-form').style.display='block';
+  document.getElementById('s2-progress').classList.remove('active');
+  document.getElementById('s2-error').className='err-box';
+  document.getElementById('s2-result').className='result-wrap';
+  document.getElementById('s2-btn').disabled=false;
+  setProgressS2(0,'',0);
+  if (S.chart2) { S.chart2.destroy(); S.chart2=null; }
+}
+
+// ═══════════════════════════════════════════
+// CHART RENDERER
+// ═══════════════════════════════════════════
+function renderChart(canvasId, years, key) {
+  if (S[key]) { S[key].destroy(); S[key]=null; }
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  S[key] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: years.map(y=>y.label||`Year ${y.year}`),
+      datasets:[
+        {
+          label:'Full Upside',
+          data: years.map(y=>y.aggressive),
+          borderColor:'#4ade80',
+          backgroundColor:'rgba(74,222,128,0.07)',
+          borderWidth:2.5,
+          pointBackgroundColor:'#4ade80',
+          pointRadius:5,
+          tension:.35,
+          fill:false,
+        },
+        {
+          label:'Base Case',
+          data: years.map(y=>y.base),
+          borderColor:'#d4f53c',
+          backgroundColor:'rgba(212,245,60,0.06)',
+          borderWidth:2.5,
+          pointBackgroundColor:'#d4f53c',
+          pointRadius:5,
+          tension:.35,
+          fill:false,
+        },
+        {
+          label:'Conservative',
+          data: years.map(y=>y.conservative),
+          borderColor:'#fb923c',
+          backgroundColor:'rgba(251,146,60,0.05)',
+          borderWidth:2,
+          pointBackgroundColor:'#fb923c',
+          pointRadius:5,
+          tension:.35,
+          borderDash:[5,4],
+          fill:false,
+        },
+        {
+          label:'Status Quo (No Fix)',
+          data: years.map(y=>y.status_quo||y.statusQuo||years[0]?.conservative||0),
+          borderColor:'#f87171',
+          backgroundColor:'rgba(248,113,113,0.04)',
+          borderWidth:2,
+          pointBackgroundColor:'#f87171',
+          pointRadius:4,
+          tension:.2,
+          borderDash:[4,4],
+          fill:false,
+        },
+      ],
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{color:'#8a8784',font:{family:'JetBrains Mono, monospace',size:11},boxWidth:12,padding:14},
+        },
+        tooltip:{
+          backgroundColor:'#1a1a1a',
+          borderColor:'#2a2a2a',
+          borderWidth:1,
+          titleColor:'#f0ede8',
+          bodyColor:'#8a8784',
+          callbacks:{label:c=>` ${c.dataset.label}: ${fc(c.raw)}`},
+        },
+      },
+      scales:{
+        x:{grid:{color:'rgba(42,42,42,0.6)'},ticks:{color:'#4a4846',font:{family:'JetBrains Mono, monospace',size:11}}},
+        y:{
+          grid:{color:'rgba(38,38,48,0.5)'},
+          ticks:{color:'#52504e',font:{family:'DM Mono, monospace',size:11},callback:v=>fc(v)},
+        },
+      },
+    },
+  });
+}
+
+// ═══════════════════════════════════════════
+// DEBATE HTML BUILDER
+// ═══════════════════════════════════════════
+function buildDebateHTML(debate) {
+  const rounds = [
+    {key:'round_1',data:debate.round_1},
+    {key:'round_2',data:debate.round_2},
+    {key:'round_3',data:debate.round_3},
+  ];
+  const pc = {
+    cfo:     {icon:'🏦',cls:'dp-cfo',  name:'CFO Perspective'},
+    investor:{icon:'📈',cls:'dp-inv',  name:'Growth Investor Perspective'},
+    consumer:{icon:'👤',cls:'dp-con',  name:'Fintech Buyer Perspective'},
+  };
+  let html='';
+  rounds.forEach(({key,data})=>{
+    if (!data) return;
+    html+=`<div style="margin-bottom:20px;">
+      <div class="debate-round-lbl">${data.title||key}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">`;
+    ['cfo','investor','consumer'].forEach(p=>{
+      if (!data[p]) return;
+      const cfg=pc[p];
+      html+=`<div class="debate-card">
+        <div class="dp ${cfg.cls}">
+          <div class="dp-icon">${cfg.icon}</div>
+          <div class="dp-name">${cfg.name}</div>
+        </div>
+        <div class="dp-arg">${data[p].argument||''}</div>
+      </div>`;
+    });
+    html+='</div>';
+    if (data.consensus) {
+      html+=`<div class="consensus" style="margin-top:10px;">
+        <div class="con-lbl">Where all three perspectives agree</div>
+        <div class="con-text">${data.consensus}</div>
+      </div>`;
+    }
+    html+='</div>';
+  });
+  return html||'<p style="color:var(--text-muted);font-size:13px;">No debate data available.</p>';
+}
+
+// ═══════════════════════════════════════════
+// PDF DOWNLOAD
+// ═══════════════════════════════════════════
+function downloadPDF() {
+  if (!S.auditData||!S.simData) return;
+  generatePDF(S.auditData, S.simData, document.getElementById('r-company').textContent);
+}
+
+function downloadDocPDF() {
+  if (!S.docSimData) return;
+  generateSimPDF(S.docSimData, document.getElementById('s2-r-company').textContent);
+}
+
+function generatePDF(audit, sim, company) {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, H=297;
+  const BK=[255,255,255], AC=[82,101,58], WH=[38,53,26], MT=[105,112,91], SF=[243,248,220];
+
+  function bg() { doc.setFillColor(...BK); doc.rect(0,0,W,H,'F'); }
+
+  // Page 1
+  bg();
+  doc.setFillColor(...SF);
+  doc.rect(0,0,W,54,'F');
+  doc.setFillColor(...AC);
+  doc.rect(0,54,W,1.5,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...AC);
+  doc.text('FLOWFORGE REVENUE  ·  REVENUE AUDIT & FORECAST REPORT', 16, 14);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(24);
+  doc.setTextColor(...WH);
+  doc.text(company, 16, 36);
+  doc.setFont('courier','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...MT);
+  doc.text(`${audit.url||''} · ${audit.stage} · ${new Date().toLocaleDateString()}`, 16, 46);
+
+  let y=68;
+  const a = audit.audit||{};
+  const f = sim.forecast||{};
+  const years = f.years||[];
+
+  function section(label) {
+    doc.setFont('courier','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...AC);
+    doc.text(label, 16, y);
+    y+=6;
+  }
+
+  function body(text, indent=0) {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...WH);
+    const lines = doc.splitTextToSize(text, W-32-indent);
+    doc.text(lines, 16+indent, y);
+    y += lines.length*5+3;
+  }
+
+  function checkPage() {
+    if (y>260) { doc.addPage(); bg(); y=20; }
+  }
+
+  section('REVENUE LEAK IDENTIFIED');
+  body(a.leak_title||'');
+  body((a.evidence||[]).join(' · '));
+  y+=4; checkPage();
+
+  section('WHY IT MATTERS');
+  body(a.why_it_matters||'');
+  y+=4; checkPage();
+
+  section('ILLUSTRATIVE MATH');
+  body(`Revenue Opportunity = QV × FR × DCR × SQLR × CR × ACV`);
+  y+=4; checkPage();
+
+  section('RECOMMENDATIONS');
+  (a.recommendations||[]).forEach((r,i)=>{
+    checkPage();
+    body(`${i+1}. ${r.title}: ${r.description}`, 4);
+  });
+  y+=4; checkPage();
+
+  section('5-YEAR REVENUE FORECAST');
+  years.forEach(yr=>{
+    checkPage();
+    body(`${yr.label}: Conservative ${fc(yr.conservative)} · Base ${fc(yr.base)} · Aggressive ${fc(yr.aggressive)} · Status Quo ${fc(yr.status_quo||yr.statusQuo||0)}`, 4);
+  });
+  y+=8; checkPage();
+
+  section('THREE PERSPECTIVES CONSENSUS');
+  const d3 = sim.debate?.round_3;
+  if (d3?.consensus) body(d3.consensus);
+  y+=4;
+
+  // Footer
+  doc.setFillColor(...SF);
+  doc.rect(0,H-14,W,14,'F');
+  doc.setFont('courier','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...MT);
+  doc.text('FlowForge Revenue  ·  flowforgerevenue.solutions  ·  hello@flowforgerevenue.solutions', W/2, H-5, {align:'center'});
+
+  doc.save(`FlowForge-Revenue-Audit-${company.replace(/\s+/g,'-')}.pdf`);
+}
+
+function generateSimPDF(sim, company) {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, H=297;
+  const BK=[255,255,255], AC=[82,101,58], WH=[38,53,26], MT=[105,112,91], SF=[243,248,220];
+
+  doc.setFillColor(...BK); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...SF); doc.rect(0,0,W,54,'F');
+  doc.setFillColor(...AC); doc.rect(0,54,W,1.5,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.setTextColor(...AC);
+  doc.text('FLOWFORGE REVENUE  ·  REVENUE FORECAST REPORT', 16, 14);
+  doc.setFontSize(24); doc.setTextColor(...WH);
+  doc.text(company, 16, 36);
+  doc.setFont('courier','normal'); doc.setFontSize(8); doc.setTextColor(...MT);
+  doc.text(new Date().toLocaleDateString(), 16, 46);
+
+  let y=68;
+  const f=sim.forecast||{};
+  const years=f.years||[];
+  const s=f.summary||{};
+
+  function body(text) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...WH);
+    const lines=doc.splitTextToSize(text,W-32);
+    doc.text(lines,16,y); y+=lines.length*5+3;
+    if (y>260){doc.addPage();doc.setFillColor(...BK);doc.rect(0,0,W,H,'F');y=20;}
+  }
+
+  doc.setFont('courier','bold'); doc.setFontSize(7.5); doc.setTextColor(...AC);
+  doc.text('5-YEAR REVENUE FORECAST', 16, y); y+=6;
+  years.forEach(yr=>body(`${yr.label}: Conservative ${fc(yr.conservative)} · Base ${fc(yr.base)} · Aggressive ${fc(yr.aggressive)}`));
+  y+=4;
+  doc.setFont('courier','bold'); doc.setFontSize(7.5); doc.setTextColor(...AC);
+  doc.text('KEY INSIGHT', 16, y); y+=6;
+  body(s.key_insight||'');
+  y+=4;
+  doc.setFont('courier','bold'); doc.setFontSize(7.5); doc.setTextColor(...AC);
+  doc.text('THREE PERSPECTIVES — CONSENSUS', 16, y); y+=6;
+  const d3=sim.debate?.round_3;
+  if (d3?.consensus) body(d3.consensus);
+
+  doc.setFillColor(...SF); doc.rect(0,H-14,W,14,'F');
+  doc.setFont('courier','normal'); doc.setFontSize(7); doc.setTextColor(...MT);
+  doc.text('FlowForge Revenue  ·  flowforgerevenue.solutions  ·  hello@flowforgerevenue.solutions', W/2, H-5,{align:'center'});
+  doc.save(`FlowForge-Revenue-Forecast-${company.replace(/\s+/g,'-')}.pdf`);
+}
+
+// ══════════════════════════════════════
+// MONETIZATION FUNCTIONS
+// ══════════════════════════════════════
+
+function applyPaidGates() { return; }
+
+function applyS2PaidGates() { return; }
+
+function handlePDFDownload() { if (document.getElementById("s2-result")?.classList.contains("active")) downloadDocPDF(); else downloadPDF(); }
+function exportExcel() { doExcelExport(); }
+
+function doExcelExport() {
+  const isS2 = document.getElementById('s2-result')?.classList.contains('active');
+  const sim = isS2 ? S.docSimData : S.simData;
+  const audit = isS2 ? null : S.auditData;
+  const company = (isS2 ? document.getElementById('s2-r-company')?.textContent : document.getElementById('r-company')?.textContent) || 'Company';
+  if (!sim?.forecast) { alert('No forecast is available to export yet.'); return; }
+  const f = sim.forecast;
+  const years = f.years || [];
+  const s = f.summary || {};
+  const rows = [
+    ['FlowForge Revenue — 5-Year Revenue Forecast'],
+    ['Company:', company],
+    ['Generated:', new Date().toLocaleDateString()],
+    ['Framework:', 'FlowForge Revenue Quantification Framework v3.1'],
+    [],
+    ['Year', 'Status Quo (No Fix)', 'Conservative Fix', 'Base Case Fix', 'Full Upside Fix'],
+  ];
+  years.forEach(y => rows.push([y.label, y.status_quo || 0, y.conservative || 0, y.base || 0, y.aggressive || 0]));
+  rows.push([]);
+  rows.push(['5-Year Cumulative Totals']);
+  rows.push(['Status Quo', s.status_quo_5yr || 0]);
+  rows.push(['Conservative', s.conservative_5yr || 0]);
+  rows.push(['Base Case', s.base_5yr || 0]);
+  rows.push(['Full Upside', s.aggressive_5yr || 0]);
+  if (audit?.audit) {
+    rows.push([]);
+    rows.push(['Audit Summary']);
+    rows.push(['Leak', audit.audit.leak_title || '']);
+    rows.push(['Area', audit.audit.leak_funnel_area || '']);
+    rows.push(['Opp Low', audit.model?.oppLow || 0]);
+    rows.push(['Opp High', audit.model?.oppHigh || 0]);
+  }
+  rows.push([]);
+  rows.push(['All figures are illustrative estimates. FlowForge Revenue Quantification Framework v3.1.']);
+
+  if (typeof XLSX === 'undefined') {
+    alert('Excel export library is unavailable. Please refresh and try again.');
+    return;
+  }
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:28},{wch:22},{wch:22},{wch:22},{wch:22}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '5-Year Forecast');
+  XLSX.writeFile(wb, `FlowForge-Forecast-${company.replace(/[^a-z0-9]+/gi,'-')}.xlsx`);
+}
+
+window.ffrAdmin = function(){ location.href='/admin'; };
+
+
+// FFR report adapters for the public, payment-free product.
+
+// ═══════════════════════════════════════════
+
+
+function ffrLegacy(report){
+  const l=report.leaks?.[0]||{}; const o=report.opportunity||{}; const a={
+    leak_title:l.title||'No material leak identified', leak_category:l.category||'', leak_funnel_area:l.funnel_area||'',
+    evidence:(l.evidence||[]).map(e=>`${e.observation||''} (${e.url||''})`), commercial_mechanism:`${l.title||'Identified friction'} may suppress conversion in the evidenced funnel area.`,
+    why_it_matters:`The audit identified ${report.evidence?.length||0} deterministic evidence signals across ${report.pages?.length||0} public pages.`,
+    friction_rate:o.fr||0, confidence:l.confidence||'Low', confidence_reason:'Derived from observable public-page evidence; conversion impact is not directly observed.',
+    unknown_variables:['Qualified traffic','Observed demo conversion','Observed SQL rate','Observed close rate'],
+    recommendations:report.recommendations||[]
+  };
+  return {url:report.url,company:report.company,stage:report.stage,acv:report.acv,audit:a,model:o};
+}
+function ffrLegacySim(report){
+  const sim=report.simulation||{}; const f=sim.years||[]; return {forecast:{years:f,summary:{...(sim.summary||{}),key_insight:sim.key_insight||''},chart_summary:'Scenario values are illustrative outputs from the audit-derived realization model.',key_insight:sim.key_insight||''},decisionAnalysis:sim.decisionAnalysis||{}};
+}
+function ffrSetReport(report){
+  S.auditData=ffrLegacy(report); S.simData=ffrLegacySim(report); S.docSimData=S.simData; return report;
+}
+function ffrClearGates(){}
+function ffrEsc(v){return esc(v);}
+function ffrRender(report){
+  ffrSetReport(report); ffrClearGates();
+  const o=report.opportunity||{}, l=report.leaks?.[0]||{}, sim=report.simulation||{}, years=sim.years||[], recs=report.recommendations||[];
+  document.getElementById('r-company').textContent=report.company||'';
+  document.getElementById('r-meta').textContent=`${report.url} · ${report.stage} · ACV ~${fc(report.acv||0)} · ${new Date(report.createdAt||Date.now()).toLocaleDateString()}`;
+  document.getElementById('r-opp').textContent=o.available?`${fc(o.oppLow)}–${fc(o.oppHigh)}`:'Not quantified';
+  document.getElementById('r-leak').textContent=l.title||'No material leak identified';
+  document.getElementById('r-area').textContent=[l.funnel_area,l.category].filter(Boolean).join(' · ');
+  document.getElementById('r-conf').textContent=l.confidence||'Low';
+  document.getElementById('r-conf-reason').textContent='Evidence confidence reflects what was observable publicly; commercial conversion rates require customer data.';
+  let h=`<div><div class="rlabel">01 · Evidence</div><div class="ev-list">${(l.evidence||[]).map(e=>`<div class="ev-item"><strong>${ffrEsc(e.name||'Signal')}</strong> — ${ffrEsc(e.observation||'')}<br><span style="font-size:10px;color:var(--text-muted)">${ffrEsc(e.url||'')}</span></div>`).join('')}</div></div>`;
+  h+=`<div><div class="rlabel">02 · Revenue Mechanism</div><div class="rtext">${ffrEsc(l.title||'')} is treated as a conversion friction signal. The audit does not claim observed revenue loss; any dollar figure is an illustrative opportunity based on explicit assumptions.</div></div>`;
+  h+=`<div><div class="rlabel">03 · Quantification & Provenance</div><div class="asm-table">${Object.entries(o.provenance||{}).map(([k,v])=>`<div class="asm-row"><span class="asm-k">${ffrEsc(k)}</span><span class="asm-v">${ffrEsc(v)}</span></div>`).join('')}</div>${o.available?`<div class="math-box"><div class="math-row">${o.qv} qualified monthly visitors × ${(o.fr*100).toFixed(1)}% modeled friction × ${(o.dcr*100).toFixed(1)}% DCR × ${(o.sqlr*100).toFixed(1)}% SQLR × ${(o.cr*100).toFixed(1)}% close rate × ${fc(report.acv)} ACV</div><div class="math-row res">→ ${fc(o.oppLow)}–${fc(o.oppHigh)} illustrative annual revenue opportunity</div></div>`:'<div class="rtext">A dollar opportunity was not calculated because sufficient funnel volume data was not supplied.</div>'}</div>`;
+  h+=`<div><div class="rlabel">04 · Recommended Fixes</div><div class="rec-list">${recs.map((r,i)=>`<div class="rec"><div class="rec-n">FIX ${i+1}</div><div><div class="rec-t">${ffrEsc(r.title)}</div><div class="rec-d">${ffrEsc(r.what)}<br><strong>Where:</strong> ${ffrEsc(r.where)}<br><strong>Why:</strong> ${ffrEsc(r.why)}</div></div></div>`).join('')}</div></div>`;
+  h+=`<div><div class="rlabel">05 · Five-Year Scenario Model</div><div class="asm-table">${years.map(y=>`<div class="asm-row"><span class="asm-k">${y.label}</span><span class="asm-v">Status ${fc(y.status_quo)} · Conservative ${fc(y.conservative)} · Base ${fc(y.base)} · Full Upside ${fc(y.aggressive)}</span></div>`).join('')}</div><div class="rtext" style="margin-top:12px">${ffrEsc(sim.key_insight||'')} These scenarios are implementation assumptions, not forecasts of what will happen.</div></div>`;
+  const da=sim.decisionAnalysis||{}; h+=`<div><div class="rlabel">06 · Executive Decision Analysis</div><div class="rec-list"><div class="rec"><div class="rec-n">CFO</div><div class="rec-d"><strong>${ffrEsc(da.cfo?.focus||'Revenue quality and ROI')}</strong><br>${(da.cfo?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">GROWTH</div><div class="rec-d"><strong>${ffrEsc(da.growth?.focus||'Growth efficiency')}</strong><br>${(da.growth?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">BUYER</div><div class="rec-d"><strong>${ffrEsc(da.buyer?.focus||'Commercial clarity')}</strong><br>${(da.buyer?.considerations||[]).map(ffrEsc).join('<br>')}</div></div></div></div>`;
+  document.getElementById('r-sections').innerHTML=h;
+  if(document.getElementById('chart-ttl'))document.getElementById('chart-ttl').textContent=`5-Year Revenue Forecast — ${report.company}`;
+  if(typeof renderChart==='function')renderChart('rev-chart',years,'chart1');
+  const s=sim.summary||{}; ['sc-sq','sc-con','sc-base','sc-agg'].forEach((id,i)=>{const vals=[s.status_quo_5yr,s.conservative_5yr,s.base_5yr,s.aggressive_5yr];if(document.getElementById(id))document.getElementById(id).textContent=fc(vals[i]||0)});
+  if(document.getElementById('ki-text'))document.getElementById('ki-text').textContent=sim.key_insight||'';
+  document.getElementById('s1-result').classList.add('active'); document.getElementById('s1-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function ffrJson(r){
+  const text=await r.text();
+  let d;
+  try{d=text?JSON.parse(text):null}catch{throw new Error(`Server returned invalid JSON (HTTP ${r.status}). Check /api/health and the Vercel function logs.`)}
+  if(!d)throw new Error(`Server returned an empty response (HTTP ${r.status}). Check /api/health and the Vercel function logs.`);
+  if(!r.ok||d.success===false)throw new Error(`${d.error||'Request failed'}${d.code?` [${d.code}]`:''}`);
+  return d;
+}
+
+// v3.1 public diagnostic flow: all reports and exports are available without payment.
+window.handlePDFDownload=function(){
+  if(document.getElementById('s2-result')?.classList.contains('active')) downloadDocPDF();
+  else downloadPDF();
+};
+window.exportExcel=function(){doExcelExport();};
+window.ffrStartPayment=function(){return false;};
+window.ffrLoadPaid=async function(){return false;};
+window.runFullAudit=async function(){
+  const val=id=>document.getElementById(id)?.value?.trim()||'';
+  const url=val('s1-url'), company=val('s1-company'), stage=val('s1-stage');
+  const acv=val('s1-acv'), revenue=val('s1-revenue'), email=val('s1-email');
+  const focus=val('s1-focus'), industry=val('s1-industry'), demos=val('s1-demos'), close=val('s1-close'), traffic=val('s1-traffic');
+  if(!url||!company||!stage||!acv||!revenue){alert('Please complete the required company, website, funding stage, ACV and annual revenue fields.');return;}
+  const button=document.getElementById('s1-btn'); button.disabled=true;
+  document.getElementById('s1-form').style.display='none';
+  document.getElementById('s1-progress').classList.add('active');
+  document.getElementById('s1-error').className='err-box';
+  document.getElementById('s1-result').className='result-wrap';
+  try{
+    setProgress(12,'Reviewing your public website...',1);
+    const response=await fetch(`${API}/api/audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,company,email,stage,acv,currentRevenue:revenue,focus,industry,monthlyDemos:demos,closeRate:close,traffic})});
+    const data=await ffrJson(response);
+    if(!data.full_report || !Array.isArray(data.full_report.pages) || !Array.isArray(data.full_report.leaks)) throw new Error('The server response was incomplete. Please retry; if it continues, contact support with the time of the attempt.');
+    setProgress(68,'Evaluating evidence and revenue friction...',3);
+    setProgress(88,'Building five-year scenarios...',4);
+    setProgress(100,'Your complete diagnostic is ready.',5);
+    document.getElementById('s1-progress').classList.remove('active');
+    ffrRender(data.full_report);
+  }catch(error){
+    document.getElementById('s1-progress').classList.remove('active');
+    document.getElementById('s1-error').classList.add('active');
+    document.getElementById('s1-err-msg').textContent=error.message||'Diagnostic failed. Please try again.';
+    button.disabled=false; document.getElementById('s1-form').style.display='block';
+  }
+};
+window.runDocSimulation=async function(){
+  const val=id=>document.getElementById(id)?.value?.trim()||'';
+  const company=val('s2-company'),stage=val('s2-stage'),acv=val('s2-acv'),revenue=val('s2-revenue');
+  if(!company||!stage||!revenue){alert('Please complete company, funding stage and current annual revenue.');return;}
+  if(!S.uploadedContent){alert('Please upload a financial or revenue document first.');return;}
+  const button=document.getElementById('s2-btn');button.disabled=true;
+  document.getElementById('s2-form').style.display='none';document.getElementById('s2-progress').classList.add('active');
+  document.getElementById('s2-error').className='err-box';document.getElementById('s2-result').className='result-wrap';
+  try{
+    setProgressS2(15,'Extracting financial data...',1);
+    const response=await fetch(`${API}/api/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType})});
+    const data=await ffrJson(response);const report=data.full_report;
+    if(!report?.simulation || !Array.isArray(report.simulation.years) || report.simulation.years.length!==5) throw new Error('The forecast service returned an incomplete five-year model.');
+    const sim=report.simulation;
+    S.docSimData={forecast:{years:sim.years,summary:{...(sim.summary||{}),key_insight:sim.key_insight||''},key_insight:sim.key_insight||''},decisionAnalysis:sim.decisionAnalysis||{}};S.simData=S.docSimData;
+    setProgressS2(100,'Your forecast is ready.',5);document.getElementById('s2-progress').classList.remove('active');
+    document.getElementById('s2-r-company').textContent=report.company;
+    document.getElementById('s2-r-meta').textContent=`Financial document · ${report.stage} · ${new Date(report.createdAt).toLocaleDateString()}`;
+    document.getElementById('s2-chart-ttl').textContent=`Five-Year Revenue Scenarios — ${report.company}`;
+    document.getElementById('s2-chart-summary-text').textContent='Historical revenue is used where available. Otherwise, the model uses a clearly disclosed 5% baseline assumption. Scenario realization assumptions are illustrative, not predictions.';
+    if(typeof renderChart==='function')renderChart('s2-rev-chart',sim.years,'chart2');
+    const summary=sim.summary||{};
+    [['s2-sc-sq',summary.status_quo_5yr],['s2-sc-con',summary.conservative_5yr],['s2-sc-base',summary.base_5yr],['s2-sc-agg',summary.aggressive_5yr]].forEach(([id,n])=>document.getElementById(id).textContent=fc(n||0));
+    document.getElementById('s2-ki-text').textContent=sim.key_insight||'';
+    document.getElementById('s2-debate-body').innerHTML=`<div class="rtext"><strong>Financial data quality:</strong> ${esc(report.financial?.dataQuality||'Not assessed')}<br><strong>Latest revenue detected:</strong> ${fc(report.financial?.latestRevenue||0)}<br><strong>Forecast basis:</strong> ${esc(sim.assumptions?.baseGrowthSource||'Stated assumptions')}<br><strong>Model note:</strong> ${esc(sim.assumptions?.realization||'Illustrative scenario assumptions.')}</div><div class="rtext" style="margin-top:12px">${Object.values(sim.decisionAnalysis||{}).map(x=>`<div style="margin-top:10px"><strong>${esc(x.focus||'')}</strong><br>${(x.considerations||[]).map(esc).join('<br>')}</div>`).join('')}</div>`;
+    document.getElementById('s2-result').classList.add('active');document.getElementById('s2-result').scrollIntoView({behavior:'smooth'});
+  }catch(error){document.getElementById('s2-progress').classList.remove('active');document.getElementById('s2-error').classList.add('active');document.getElementById('s2-err-msg').textContent=error.message||'Forecast failed. Please try again.';button.disabled=false;document.getElementById('s2-form').style.display='block';}
+};
+
+</script>
+</body>
+</html>
