@@ -1,0 +1,2 @@
+function validateAudit(a){const errors=[]; if(!a.company)errors.push('company missing'); if(!a.url)errors.push('url missing'); if(!Array.isArray(a.pages))errors.push('pages missing'); if(!Array.isArray(a.leaks))errors.push('leaks missing'); if(a.opportunity?.oppLow<0||a.opportunity?.oppHigh<0)errors.push('negative opportunity'); return {ok:errors.length===0,errors};}
+module.exports={validateAudit};

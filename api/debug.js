@@ -1,0 +1,1 @@
+const {cors,json}=require('../utils/http');const store=require('../utils/store');module.exports=async function(req,res){cors(res,req);return json(res,200,{success:true,service:'FlowForge Revenue Diagnostic',engine:'3.1.0',payments:false,ai_dependencies:false,persistence_configured:store.configured(),admin_configured:!!process.env.FFR_ADMIN_PASSWORD});};

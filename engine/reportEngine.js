@@ -1,0 +1,2 @@
+function preview(audit){return {company:audit.company,url:audit.url,stage:audit.stage,headline:audit.leaks?.[0]?.title||'No material leak identified',confidence:audit.leaks?.[0]?.confidence||'Low',opportunity:audit.opportunity?.available?{low:audit.opportunity.oppLow,high:audit.opportunity.oppHigh}:null,topEvidence:(audit.leaks?.[0]?.evidence||[]).slice(0,2).map(e=>({page:e.url,observation:e.observation})),note:'The complete diagnostic, evidence, recommendations, scenario model and exports are included in this report.'};}
+module.exports={preview};
