@@ -2,6 +2,7 @@ const { cors, json, bodySize } = require('../utils/http');
 const { buildSimulation } = require('../engine/simulationEngine');
 const { normalize } = require('../engine/financialEngine');
 const { perspectives } = require('../engine/perspectivesEngine');
+const {check}=require('../engine/integrityEngine');
 
 module.exports = async function simulateHandler(req, res) {
   cors(res, req);
@@ -30,18 +31,18 @@ module.exports = async function simulateHandler(req, res) {
       confidence: financial.dataQuality === 'High' ? 'High' : 'Medium'
     });
     const report = {
-      version: '3.1.0', kind: 'ffr-document-report', company,
+      version: '3.4.0', currency:body.currency||null, kind: 'ffr-document-report', company,
       stage: body.stage || 'Not specified', acv: Number(body.acv || 0),
       financial, simulation, sourceType: body.fileType || 'document',
       createdAt: new Date().toISOString(),
       framework: 'FlowForge Revenue Quantification Framework v3.1'
     };
-    report.perspectives = perspectives(report);
+    report.integrity=check(report); if(!report.integrity.ok)throw new Error(report.integrity.errors.join('; ')); report.perspectives = perspectives(report);
     if (!Array.isArray(report.simulation.years) || report.simulation.years.length !== 5) {
       throw new Error('The forecast engine did not produce five annual scenarios.');
     }
     return json(res, 200, {
-      success: true, version: '3.1.0', full_report: report,
+      success: true, version: '3.4.0', full_report: report,
       financialSummary: {
         latestRevenue: financial.latestRevenue,
         dataQuality: financial.dataQuality,

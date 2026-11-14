@@ -4,7 +4,7 @@ const {quantify}=require('../engine/quantificationEngine');
 const {normalize}=require('../engine/financialEngine');
 const {runRules}=require('../rules/registry');
 (async()=>{
- const q=quantify({stage:'Series A',acv:40000,traffic:1000,closeRate:12,leak:{severity:.6}});assert(q.available&&q.oppHigh>q.oppLow);
+ const q=quantify({stage:'Series A',acv:40000,traffic:1000,closeRate:12,leak:{severity:.6,evidence:[{url:'https://example.test/contact',observation:'CTA text'}]}});assert(q.available&&q.oppHigh>q.oppLow);
  const sim=buildSimulation({currentRevenue:1000000,opportunity:q,confidence:'Medium'});assert.equal(sim.years.length,5);assert(sim.summary.base_5yr>sim.summary.status_quo_5yr);
  const fin=normalize({text:'2024 Revenue $800,000\n2025 Revenue $1,000,000\nGross Profit $400,000\nEBITDA $100,000',declaredRevenue:0});assert.equal(fin.latestRevenue,1000000);assert.equal(fin.metrics.grossProfit,400000);
  const rules=runRules({type:'home',url:'https://example.com',title:'Example',text:'A platform',ctas:[],forms:[]});assert(rules.length>0);
@@ -16,7 +16,7 @@ const {runRules}=require('../rules/registry');
  const health=require('./health');
  const healthResponse={statusCode:0,headers:{},setHeader(){},status(n){this.statusCode=n;return this},json(v){this.payload=v;return v}};
  await health({method:'GET',headers:{host:'localhost'}},healthResponse);
- assert.equal(healthResponse.payload.version,'3.1.0');assert.equal(healthResponse.payload.payments,false);
+ assert.equal(healthResponse.payload.version,'3.4.0');assert.equal(healthResponse.payload.payments,false);
  // Deterministic website-crawl integration test with network and DNS isolated.
  const dns=require('dns').promises; const originalLookup=dns.lookup; const originalFetch=global.fetch;
  dns.lookup=async()=>[{address:'93.184.216.34',family:4}];

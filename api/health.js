@@ -7,7 +7,7 @@ module.exports = async function health(req, res) {
   return json(res, 200, {
     success: true,
     service: 'FlowForge Revenue Diagnostic',
-    version: '3.1.0',
+    version: '3.4.0',
     engine: 'deterministic',
     payments: false,
     registration_required: false,

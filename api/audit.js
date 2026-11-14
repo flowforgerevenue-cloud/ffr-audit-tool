@@ -17,7 +17,7 @@ module.exports = async function auditHandler(req, res) {
     }
     return json(res, 200, {
       success: true,
-      version: '3.1.0',
+      version: '3.4.0',
       full_report: result.audit,
       preview: result.preview,
       framework: 'FlowForge Revenue Quantification Framework v3.1'

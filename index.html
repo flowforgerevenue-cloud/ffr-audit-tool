@@ -667,7 +667,7 @@
           </div>
           <div class="fg">
             <label>Funding Stage <span style="color:var(--red)">*</span></label>
-            <select id="s1-stage">
+            <label for="s1-currency" style="display:block;margin:8px 0 4px">Reporting currency (required for labeled financial outputs)</label><select id="s1-currency" aria-label="Reporting currency"><option value="">Not confirmed — show monetary units</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="NGN">NGN</option><option value="BRL">BRL</option><option value="MXN">MXN</option><option value="ARS">ARS</option><option value="OTHER">Other / unspecified</option></select><label for="s1-stage" style="display:block;margin:8px 0 4px">Funding stage</label><select id="s1-stage">
               <option value="" disabled selected>Select stage</option>
               <option value="Pre-Seed">Pre-Seed</option>
               <option value="Seed">Seed</option>
@@ -788,7 +788,7 @@
         </div>
       </div>
       <div class="result-bar">
-        <span>FlowForge Revenue Quantification Framework v3.1</span>
+        <span>FlowForge Revenue Quantification Framework v3.4</span>
         <span>Revenue Opportunity = QV × FR × DCR × SQLR × CR × ACV</span>
       </div>
       <div class="result-body">
@@ -818,7 +818,7 @@
         <div style="padding:0 28px 0;">
           <div class="forecast-intro">
             <h3>What does the next 5 years look like?</h3>
-            <p>Below is a revenue forecast modelled across four trajectories — what happens if the leak goes unfixed, and what happens across three recovery scenarios if you address it. The gap between the status quo line and the fix scenarios is the compounding cost of inaction.</p>
+            <p>Below is a revenue forecast modelled across four trajectories — what happens if the leak goes unfixed, and what happens across three recovery scenarios if you address it. Any gap between scenarios is a conditional model result, not a measured cost of inaction.</p>
           </div>
         </div>
 
@@ -826,17 +826,12 @@
         <div style="padding:0 28px 20px;">
           <div class="chart-card" style="margin-bottom:0;">
             <div class="chart-ttl" id="chart-ttl"></div>
-            <div class="chart-sub">Revenue projections in USD · All figures illustrative using stated assumptions</div>
+            <div class="chart-sub">Illustrative modeled revenue · Currency follows user inputs</div>
             <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
           </div>
           <div class="chart-summary-box" style="margin-top:12px;">
             <div class="cs-label">📖 How To Read The Four Lines</div>
-            <div class="cs-text" id="chart-summary-text">
-              <p><strong style="color:var(--red);">Status Quo — red dashed line.</strong> This is the trajectory if the identified revenue friction remains unresolved. It assumes 3% annual growth, so it represents the business continuing on its current path without a targeted recovery effort.</p>
-              <p style="margin-top:10px;"><strong style="color:var(--orange);">Conservative — orange line.</strong> This shows the outcome of a cautious recovery, using an 18% annual growth assumption after addressing the identified friction.</p>
-              <p style="margin-top:10px;"><strong style="color:var(--accent);">Base Case — lime line.</strong> This represents the expected recovery scenario, using a 35% annual growth assumption when the recommended fix is implemented effectively.</p>
-              <p style="margin-top:10px;"><strong style="color:var(--green);">Full Upside — green line.</strong> This represents the highest modeled recovery path at 70% annual growth. In plain commercial terms, the widening gap between these lines shows the value of changing the revenue trajectory earlier rather than allowing the opportunity cost to compound.</p>
-            </div>
+            <div class="cs-text" id="chart-summary-text">Scenario descriptions will be calculated from this report's actual inputs.</div>
           </div>
         </div>
 
@@ -846,7 +841,7 @@
             <div class="sc sc-status-quo">
               <div class="sc-lbl">Status Quo (No Fix)</div>
               <div class="sc-val" id="sc-sq"></div>
-              <div class="sc-note">5-yr cumulative · leak continues</div>
+              <div class="sc-note">5-yr cumulative · baseline</div>
             </div>
             <div class="sc sc-conservative">
               <div class="sc-lbl">Conservative Fix</div>
@@ -856,7 +851,7 @@
             <div class="sc sc-base">
               <div class="sc-lbl">Base Case Fix</div>
               <div class="sc-val" id="sc-base"></div>
-              <div class="sc-note">5-yr cumulative · expected recovery</div>
+              <div class="sc-note">5-yr cumulative · modeled base case</div>
             </div>
             <div class="sc sc-aggressive">
               <div class="sc-lbl">Full Upside Fix</div>
@@ -886,7 +881,7 @@
         </div>
 
         <div class="disclaimer" id="r-disclaimer">
-          All figures are illustrative estimates based on benchmark assumptions for B2B fintech companies at the stated stage. This report does not claim actual revenue loss — only potential opportunity using stated inputs. All assumptions are listed explicitly and adjustable with real company data. Powered by FlowForge Revenue Quantification Framework v3.1.
+          All figures are illustrative estimates based on benchmark assumptions for B2B fintech companies at the stated stage. This report does not claim actual revenue loss — only potential opportunity using stated inputs. Inputs and limitations are disclosed; verify financial assumptions with company records. Powered by FlowForge Revenue Quantification Framework v3.4.
         </div>
 
         <div style="padding:0 28px 28px;">
@@ -934,7 +929,7 @@
           </div>
           <div class="fg">
             <label>Funding Stage</label>
-            <select id="s2-stage">
+            <label for="s2-currency" style="display:block;margin:8px 0 4px">Reporting currency (required for labeled financial outputs)</label><select id="s2-currency" aria-label="Reporting currency"><option value="">Not confirmed — show monetary units</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="NGN">NGN</option><option value="BRL">BRL</option><option value="MXN">MXN</option><option value="ARS">ARS</option><option value="OTHER">Other / unspecified</option></select><label for="s2-stage" style="display:block;margin:8px 0 4px">Funding stage</label><select id="s2-stage">
               <option value="Seed">Seed</option>
               <option value="Series A" selected>Series A</option>
               <option value="Series B">Series B</option>
@@ -1012,19 +1007,14 @@
         <!-- Chart -->
         <div class="chart-card">
           <div class="chart-ttl" id="s2-chart-ttl"></div>
-          <div class="chart-sub">Revenue projections in USD · Based on uploaded document · All figures illustrative</div>
+          <div class="chart-sub">Illustrative modeled revenue · Source quality and currency require verification</div>
           <div class="chart-wrap"><canvas id="s2-rev-chart"></canvas></div>
         </div>
 
         <!-- Chart line explanation -->
         <div class="chart-summary-box" style="margin-bottom:12px;">
           <div class="cs-label">📖 How To Read The Four Lines</div>
-          <div class="cs-text" id="s2-chart-summary-text" style="font-size:12.5px;">
-            <p><strong style="color:var(--red);">Status Quo — red dashed line.</strong> This is the trajectory if no corrective action is taken. It uses 3% annual growth and represents the cost of allowing the current revenue path to continue.</p>
-            <p style="margin-top:10px;"><strong style="color:var(--orange);">Conservative — orange line.</strong> This models a lower realization of the identified opportunity.</p>
-            <p style="margin-top:10px;"><strong style="color:var(--accent);">Base Case — lime line.</strong> This models a central realization scenario, based on the stated assumptions.</p>
-            <p style="margin-top:10px;"><strong style="color:var(--green);">Full Upside — green line.</strong> This models a higher realization scenario. These are scenario calculations, not predictions or guaranteed outcomes.</p>
-          </div>
+          <div class="cs-text" id="s2-chart-summary-text" style="font-size:12.5px;">Scenario descriptions will be calculated from this report's actual inputs.</div>
         </div>
 
         <!-- Scenarios -->
@@ -1067,7 +1057,7 @@
         </div>
 
         <div style="font-family:var(--font-m);font-size:9px;color:var(--text-muted);line-height:1.7;margin:16px 0;padding:12px 16px;border:1px solid var(--border);border-radius:var(--r-sm);">
-          All scenarios are illustrative estimates based on extracted financial information and stated assumptions. They are not predictions or financial advice. Powered by FlowForge Revenue Quantification Framework v3.1.
+          All scenarios are illustrative estimates based on extracted financial information and stated assumptions. They are not predictions or financial advice. Powered by FlowForge Revenue Quantification Framework v3.4.
         </div>
 
         <div class="cta-strip ffr-conversion"><div><p><strong>Your forecast shows the possibilities. A full audit tests what is achievable.</strong> Turn financial scenarios into a measured revenue improvement plan.</p><a class="btn-primary" href="https://flowforgerevenue.solutions/services.html">Apply for a Full Revenue Audit →</a></div></div>
@@ -1346,9 +1336,7 @@ function renderS1Result(audit, sim, company, stage, acv, revenue) {
 
   // Chart summary
   const cst = document.getElementById('chart-summary-text');
-  if (cst && f.chart_summary) {
-    cst.querySelector('p:last-child')?.insertAdjacentHTML('beforeend', ` <span style="color:var(--text-pri);">${f.chart_summary}</span>`);
-  }
+  if (cst && f.chart_summary) cst.textContent = f.chart_summary;
 
   // Debate
   document.getElementById('debate-body').innerHTML = buildDebateHTML(sim.debate||{});
@@ -1824,7 +1812,7 @@ function doExcelExport() {
     ['FlowForge Revenue — 5-Year Revenue Forecast'],
     ['Company:', company],
     ['Generated:', new Date().toLocaleDateString()],
-    ['Framework:', 'FlowForge Revenue Quantification Framework v3.1'],
+    ['Framework:', 'FlowForge Revenue Quantification Framework v3.4'],
     [],
     ['Year', 'Status Quo (No Fix)', 'Conservative Fix', 'Base Case Fix', 'Full Upside Fix'],
   ];
@@ -1844,7 +1832,7 @@ function doExcelExport() {
     rows.push(['Opp High', audit.model?.oppHigh || 0]);
   }
   rows.push([]);
-  rows.push(['All figures are illustrative estimates. FlowForge Revenue Quantification Framework v3.1.']);
+  rows.push(['All figures are illustrative estimates. FlowForge Revenue Quantification Framework v3.4.']);
 
   if (typeof XLSX === 'undefined') {
     alert('Excel export library is unavailable. Please refresh and try again.');
@@ -1884,6 +1872,23 @@ function ffrSetReport(report){
 }
 function ffrClearGates(){}
 function ffrEsc(v){return esc(v);}
+function ffrScenarioNarrative(sim, report){
+ const growth=Number(sim?.baselineGrowth);
+ const growthLabel=Number.isFinite(growth)?(growth*100).toFixed(1)+'%':'not established';
+ const source=ffrEsc(sim?.assumptions?.baseGrowthSource||'source not established');
+ const opp=Number(sim?.modeledOpportunity||0);
+ const currency='user-selected monetary units';
+ const rows=[`<p><strong>Baseline:</strong> ${growthLabel} annual growth (${source}). This is a model assumption or historical estimate, not a guaranteed outcome.</p>`];
+ if(!(opp>0)){
+   rows.push('<p><strong>Scenario interpretation:</strong> No quantified recoverable opportunity was established. Conservative, base and upside trajectories therefore coincide with the baseline. Overlapping chart lines are expected.</p>');
+ }else{
+   rows.push(`<p><strong>Scenario interpretation:</strong> Conservative, base and upside trajectories apply different modeled realization parameters to an illustrative opportunity of ${ffrEsc(opp.toLocaleString('en-US',{maximumFractionDigits:0}))} ${currency}. Their divergence does not establish observed losses, achievable lift, or probabilities.</p>`);
+ }
+ const start=Number(sim?.startRevenue||0);
+ if(start>0 && opp>start)rows.push('<p><strong>High-sensitivity warning:</strong> The modeled annual opportunity exceeds the declared opening annual revenue. Verify qualified traffic, funnel rates, ACV, currency and overlapping demand before relying on these figures.</p>');
+ rows.push('<p><strong>Decision standard:</strong> Validate the opportunity against actual funnel cohorts, implementation costs and contribution margin before investment.</p>');
+ return rows.join('');
+}
 function ffrRender(report){
   window.ffrFullAuditReport=report;
   ffrSetReport(report); ffrClearGates();
@@ -1900,9 +1905,14 @@ function ffrRender(report){
   h+=`<div><div class="rlabel">03 · Quantification & Provenance</div><div class="asm-table">${Object.entries(o.provenance||{}).map(([k,v])=>`<div class="asm-row"><span class="asm-k">${ffrEsc(k)}</span><span class="asm-v">${ffrEsc(v)}</span></div>`).join('')}</div>${o.available?`<div class="math-box"><div class="math-row">${o.qv} qualified monthly visitors × ${(o.fr*100).toFixed(1)}% modeled friction × ${(o.dcr*100).toFixed(1)}% DCR × ${(o.sqlr*100).toFixed(1)}% SQLR × ${(o.cr*100).toFixed(1)}% close rate × ${fc(report.acv)} ACV</div><div class="math-row res">→ ${fc(o.oppLow)}–${fc(o.oppHigh)} illustrative annual revenue opportunity</div></div>`:'<div class="rtext">A dollar opportunity was not calculated because sufficient funnel volume data was not supplied.</div>'}</div>`;
   h+=`<div><div class="rlabel">04 · Recommended Fixes</div><div class="rec-list">${recs.map((r,i)=>`<div class="rec"><div class="rec-n">FIX ${i+1}</div><div><div class="rec-t">${ffrEsc(r.title)}</div><div class="rec-d">${ffrEsc(r.what)}<br><strong>Where:</strong> ${ffrEsc(r.where)}<br><strong>Why:</strong> ${ffrEsc(r.why)}</div></div></div>`).join('')}</div></div>`;
   h+=`<div><div class="rlabel">05 · Five-Year Scenario Model</div><div class="asm-table">${years.map(y=>`<div class="asm-row"><span class="asm-k">${y.label}</span><span class="asm-v">Status ${fc(y.status_quo)} · Conservative ${fc(y.conservative)} · Base ${fc(y.base)} · Full Upside ${fc(y.aggressive)}</span></div>`).join('')}</div><div class="rtext" style="margin-top:12px">${ffrEsc(sim.key_insight||'')} These scenarios are implementation assumptions, not forecasts of what will happen.</div></div>`;
-  const da=sim.decisionAnalysis||{}; h+=`<div><div class="rlabel">06 · Executive Decision Analysis</div><div class="rec-list"><div class="rec"><div class="rec-n">CFO</div><div class="rec-d"><strong>${ffrEsc(da.cfo?.focus||'Revenue quality and ROI')}</strong><br>${(da.cfo?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">GROWTH</div><div class="rec-d"><strong>${ffrEsc(da.growth?.focus||'Growth efficiency')}</strong><br>${(da.growth?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">BUYER</div><div class="rec-d"><strong>${ffrEsc(da.buyer?.focus||'Commercial clarity')}</strong><br>${(da.buyer?.considerations||[]).map(ffrEsc).join('<br>')}</div></div></div></div>`;
-  if(report.perspectives) h+=`<div><div class="rlabel">07 · Three Analytical Perspectives & Integrated Diagnosis</div>${ffrPerspectiveHTML(report.perspectives)}</div>`;
+  // The dedicated Decision Room below is the single source for the adversarial review.
+  if(report.integrity?.warnings?.length || sim.warnings?.length){
+    const messages=[...(report.integrity?.warnings||[]),...(sim.warnings||[])];
+    h=`<div class="key-insight" style="margin:12px 0"><div class="ki-lbl">Model integrity & limitations</div><ul style="padding-left:20px">${[...new Set(messages)].map(x=>`<li>${ffrEsc(x)}</li>`).join('')}</ul></div>`+h;
+  }
   document.getElementById('r-sections').innerHTML=h;
+  const room=document.getElementById('debate-body'); if(room)room.innerHTML=report.perspectives?ffrPerspectiveHTML(report.perspectives):'<p class="rtext">The review is unavailable for this report.</p>';
+  const chartNote=document.getElementById('chart-summary-text'); if(chartNote)chartNote.innerHTML=ffrScenarioNarrative(sim,report);
   if(document.getElementById('chart-ttl'))document.getElementById('chart-ttl').textContent=`5-Year Revenue Forecast — ${report.company}`;
   if(typeof renderChart==='function')renderChart('rev-chart',years,'chart1');
   const s=sim.summary||{}; ['sc-sq','sc-con','sc-base','sc-agg'].forEach((id,i)=>{const vals=[s.status_quo_5yr,s.conservative_5yr,s.base_5yr,s.aggressive_5yr];if(document.getElementById(id))document.getElementById(id).textContent=fc(vals[i]||0)});
@@ -1940,7 +1950,7 @@ window.runFullAudit=async function(){
   document.getElementById('s1-result').className='result-wrap';
   try{
     setProgress(12,'Reviewing your public website...',1);
-    const response=await fetch(`${API}/api/audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,company,email,stage,acv,currentRevenue:revenue,focus,industry,monthlyDemos:demos,closeRate:close,traffic})});
+    const response=await fetch(`${API}/api/audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,company,email,stage,acv,currentRevenue:revenue,focus,industry,monthlyDemos:demos,closeRate:close,traffic,currency:val('s1-currency')})});
     const data=await ffrJson(response);
     if(!data.full_report || !Array.isArray(data.full_report.pages) || !Array.isArray(data.full_report.leaks)) throw new Error('The server response was incomplete. Please retry; if it continues, contact support with the time of the attempt.');
     setProgress(68,'Evaluating evidence and revenue friction...',3);
@@ -1965,7 +1975,7 @@ window.runDocSimulation=async function(){
   document.getElementById('s2-error').className='err-box';document.getElementById('s2-result').className='result-wrap';
   try{
     setProgressS2(15,'Extracting financial data...',1);
-    const response=await fetch(`${API}/api/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType})});
+    const response=await fetch(`${API}/api/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType,currency:val('s2-currency')})});
     const data=await ffrJson(response);const report=data.full_report;
     if(!report?.simulation || !Array.isArray(report.simulation.years) || report.simulation.years.length!==5) throw new Error('The forecast service returned an incomplete five-year model.');
     const sim=report.simulation;
@@ -1975,13 +1985,14 @@ window.runDocSimulation=async function(){
     document.getElementById('s2-r-company').textContent=report.company;
     document.getElementById('s2-r-meta').textContent=`Financial document · ${report.stage} · ${new Date(report.createdAt).toLocaleDateString()}`;
     document.getElementById('s2-chart-ttl').textContent=`Five-Year Revenue Scenarios — ${report.company}`;
-    document.getElementById('s2-chart-summary-text').textContent=sim.scenariosDistinct?'Scenario differences depend on the disclosed modeled opportunity and realization assumptions. These are not predictions.':'Only one baseline is defensible: all four series coincide because the uploaded document does not establish a recoverable opportunity. The 5% growth is an illustrative assumption, not observed growth.';
+    document.getElementById('s2-chart-summary-text').innerHTML=ffrScenarioNarrative(sim,report);
     if(typeof renderChart==='function')renderChart('s2-rev-chart',sim.years,'chart2');
     const summary=sim.summary||{};
     [['s2-sc-sq',summary.status_quo_5yr],['s2-sc-con',summary.conservative_5yr],['s2-sc-base',summary.base_5yr],['s2-sc-agg',summary.aggressive_5yr]].forEach(([id,n])=>document.getElementById(id).textContent=fc(n||0));
     document.getElementById('s2-ki-text').textContent=sim.key_insight||'';
     document.getElementById('s2-debate-body').innerHTML=`<div class="rtext"><strong>Financial data quality:</strong> ${esc(report.financial?.dataQuality||'Not assessed')}<br><strong>Declared annual revenue:</strong> ${fc(report.financial?.declaredRevenue||0)}<br><strong>Document classification:</strong> ${esc(report.financial?.documentType||'Not assessed')}<br><strong>Parsing warnings:</strong> ${esc((report.financial?.warnings||[]).join(' ')||'None')}<br><strong>Forecast basis:</strong> ${esc(sim.assumptions?.baseGrowthSource||'Stated assumptions')}<br><strong>Model note:</strong> ${esc(sim.assumptions?.realization||'Illustrative scenario assumptions.')}</div><div class="rtext" style="margin-top:12px">${Object.values(sim.decisionAnalysis||{}).map(x=>`<div style="margin-top:10px"><strong>${esc(x.focus||'')}</strong><br>${(x.considerations||[]).map(esc).join('<br>')}</div>`).join('')}</div>`;
     if(report.perspectives) document.getElementById('s2-debate-body').innerHTML=ffrPerspectiveHTML(report.perspectives);
+    if(report.integrity?.warnings?.length||sim.warnings?.length){const el=document.getElementById('s2-debate-body');el.insertAdjacentHTML('afterbegin',`<div class="key-insight"><strong>Model limitations</strong><ul>${[...new Set([...(report.integrity?.warnings||[]),...(sim.warnings||[])])].map(x=>`<li>${ffrEsc(x)}</li>`).join('')}</ul></div>`);}
     document.getElementById('s2-result').classList.add('active');document.getElementById('s2-result').scrollIntoView({behavior:'smooth'});
   }catch(error){document.getElementById('s2-progress').classList.remove('active');document.getElementById('s2-error').classList.add('active');document.getElementById('s2-err-msg').textContent=error.message||'Forecast failed. Please try again.';button.disabled=false;document.getElementById('s2-form').style.display='block';}
 };
