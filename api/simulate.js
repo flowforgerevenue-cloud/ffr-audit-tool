@@ -1,6 +1,7 @@
 const { cors, json, bodySize } = require('../utils/http');
 const { buildSimulation } = require('../engine/simulationEngine');
 const { normalize } = require('../engine/financialEngine');
+const { perspectives } = require('../engine/perspectivesEngine');
 
 module.exports = async function simulateHandler(req, res) {
   cors(res, req);
@@ -35,6 +36,7 @@ module.exports = async function simulateHandler(req, res) {
       createdAt: new Date().toISOString(),
       framework: 'FlowForge Revenue Quantification Framework v3.1'
     };
+    report.perspectives = perspectives(report);
     if (!Array.isArray(report.simulation.years) || report.simulation.years.length !== 5) {
       throw new Error('The forecast engine did not produce five annual scenarios.');
     }

@@ -1,0 +1,4 @@
+const assert=require('assert');const {perspectives}=require('../engine/perspectivesEngine');const {buildSimulation}=require('../engine/simulationEngine');
+const sim=buildSimulation({currentRevenue:120000,opportunity:{available:false},financial:{historicalRevenue:[]},confidence:'Medium'});
+const r={company:'Test',simulation:sim,financial:{dataQuality:'medium'},leaks:[{title:'CTA friction',evidence:[{name:'Missing CTA',observation:'No CTA',url:'https://example.com'}]}],pages:[{url:'https://example.com'}],evidence:[{name:'Missing CTA'}],recommendations:[]};
+const p=perspectives(r);assert.equal(p.method,'deterministic-rules-v1');assert(p.systems.argument.includes('CTA friction'));assert(p.quantitative.argument.includes('5.0%'));assert.equal(p.integrated.nextSteps.length,4);assert(!JSON.stringify(p).includes('undefined'));console.log('Deterministic perspectives: passed');

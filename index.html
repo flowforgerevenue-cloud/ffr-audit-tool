@@ -31,6 +31,7 @@
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -583,7 +584,15 @@
     .paid-badge,.free-badge{display:none!important}
     @media(max-width:640px){.nav{padding:0 16px}.hero{padding-top:96px}.card-body{padding:20px}.card-head{padding:18px 20px}}
 
-  </style>
+  
+/* v3.2 responsive report and export controls */
+.ffr-downloads{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 8px;align-items:center}
+.ffr-downloads button{min-height:44px;white-space:normal}
+.ffr-conversion{display:block}.ffr-conversion>div{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.ffr-conversion .btn-primary{max-width:100%;white-space:normal;text-align:center}
+.rtext,.ev-item,.asm-v,.rec-d,.result-meta,.chart-summary-box{overflow-wrap:anywhere;word-break:normal}
+@media(max-width:720px){.nav{padding:0 12px}.nav-links{gap:8px}.nav-link{font-size:11px}.logo{font-size:12px}.logo img{max-width:35px;height:auto}.wrap{padding:20px 12px 65px}.hero{padding:94px 14px 35px}.card-head,.card-body,.result-header,.result-body{padding-left:15px!important;padding-right:15px!important}.result-header,.result-actions,.session-pills{flex-wrap:wrap;gap:10px}.pill{padding:9px 12px;font-size:11px}.metrics{display:grid!important;grid-template-columns:1fr!important}.rsections{padding:15px!important}.asm-row{flex-wrap:wrap;gap:6px}.asm-v{max-width:100%;text-align:left}.chart-wrap{min-height:230px;overflow-x:auto}.ffr-downloads{flex-direction:column;align-items:stretch}.ffr-downloads button{width:100%}.cta-strip{padding:16px!important}.ffr-conversion .btn-primary{width:100%}}
+@media(max-width:390px){.nav-links .nav-link{display:none}.hero h1{font-size:28px}.result-company{font-size:20px}}
+</style>
 </head>
 <body>
 
@@ -774,8 +783,7 @@
         </div>
         <div class="result-actions">
           <button class="btn-sm" onclick="resetS1()">New Audit</button>
-          <button class="btn-sm btn-acc" onclick="exportExcel()" style="background:var(--surface-2);color:var(--text-sec);">📊 Excel</button>
-          <button class="btn-sm btn-acc" onclick="handlePDFDownload()">⬇ PDF Report</button>
+
         </div>
       </div>
       <div class="result-bar">
@@ -870,7 +878,7 @@
           <div class="debate-wrap">
             <div class="debate-head">
               <h3>Three Perspectives on This Opportunity</h3>
-              <p>A CFO, a growth investor, and a fintech buyer each weigh in on what fixing this leak means for the business — and where they agree and disagree.</p>
+              <p>Three independent rule-based analyses examine evidence, financial implications and commercial decisions; no generative AI is used.</p>
             </div>
             <div class="debate-body" id="debate-body"></div>
           </div>
@@ -881,10 +889,8 @@
         </div>
 
         <div style="padding:0 28px 28px;">
-          <div class="cta-strip">
-            <p><strong>Your complete report.</strong> Get the complete audit findings, all 3 recommendations, the full 5-year forecast, three-perspectives simulation, PDF download, and Excel export.</p>
-            <a href="javascript:document.getElementById('s1-form')?.scrollIntoView({behavior:'smooth'})" target="_blank" class="btn-primary">Download Your Report</a>
-          </div>
+          <div class="cta-strip ffr-conversion"><div><p><strong>You have seen what the diagnostic can uncover.</strong> Imagine what a full, evidence-led revenue audit could reveal—and what your business could recover with expert execution.</p><a class="btn-primary" href="https://flowforgerevenue.solutions/services.html">Apply for a Full Revenue Audit →</a></div></div>
+          <div class="ffr-downloads"><button class="btn-sm btn-acc" onclick="ffrDownloadPDF('audit')">Download Complete PDF</button><button class="btn-sm" onclick="ffrDownloadExcel('audit')">Download Excel & Charts</button></div>
         </div>
       </div>
 
@@ -996,9 +1002,8 @@
           <div class="result-meta" id="s2-r-meta"></div>
         </div>
         <div class="result-actions">
-          <button class="btn-sm" onclick="resetS2()">New Forecast</button>
-          <button class="btn-sm btn-acc" onclick="exportExcel()">📊 Excel Report</button>
-          <button class="btn-sm btn-acc" onclick="handlePDFDownload()">⬇ Download PDF</button>
+          <button class="btn-sm" onclick="resetS2()">New Audit</button>
+
         </div>
       </div>
 
@@ -1055,7 +1060,7 @@
         <div class="debate-wrap">
           <div class="debate-head">
             <h3>Three Perspectives on Your Revenue Data</h3>
-            <p>A CFO, a growth investor, and a fintech buyer each interpret your document and weigh in on what the numbers mean for your next five years.</p>
+            <p>Three independent deterministic analyses assess revenue systems, financial assumptions and commercial decisions.</p>
           </div>
           <div class="debate-body" id="s2-debate-body"></div>
         </div>
@@ -1064,10 +1069,8 @@
           All scenarios are illustrative estimates based on extracted financial information and stated assumptions. They are not predictions or financial advice. Powered by FlowForge Revenue Quantification Framework v3.1.
         </div>
 
-        <div class="cta-strip">
-          <p><strong>Your complete forecast and exports are ready.</strong> Get the complete three-perspectives debate, PDF download, and Excel 5-year forecast export.</p>
-          <a href="javascript:document.getElementById('s1-form')?.scrollIntoView({behavior:'smooth'})" target="_blank" class="btn-primary">Download Your Report</a>
-        </div>
+        <div class="cta-strip ffr-conversion"><div><p><strong>Your forecast shows the possibilities. A full audit tests what is achievable.</strong> Turn financial scenarios into a measured revenue improvement plan.</p><a class="btn-primary" href="https://flowforgerevenue.solutions/services.html">Apply for a Full Revenue Audit →</a></div></div>
+        <div class="ffr-downloads"><button class="btn-sm btn-acc" onclick="ffrDownloadPDF('forecast')">Download Complete PDF</button><button class="btn-sm" onclick="ffrDownloadExcel('forecast')">Download Excel & Charts</button></div>
       </div>
 
     </div><!-- /#s2-result -->
@@ -1881,6 +1884,7 @@ function ffrSetReport(report){
 function ffrClearGates(){}
 function ffrEsc(v){return esc(v);}
 function ffrRender(report){
+  window.ffrFullAuditReport=report;
   ffrSetReport(report); ffrClearGates();
   const o=report.opportunity||{}, l=report.leaks?.[0]||{}, sim=report.simulation||{}, years=sim.years||[], recs=report.recommendations||[];
   document.getElementById('r-company').textContent=report.company||'';
@@ -1896,6 +1900,7 @@ function ffrRender(report){
   h+=`<div><div class="rlabel">04 · Recommended Fixes</div><div class="rec-list">${recs.map((r,i)=>`<div class="rec"><div class="rec-n">FIX ${i+1}</div><div><div class="rec-t">${ffrEsc(r.title)}</div><div class="rec-d">${ffrEsc(r.what)}<br><strong>Where:</strong> ${ffrEsc(r.where)}<br><strong>Why:</strong> ${ffrEsc(r.why)}</div></div></div>`).join('')}</div></div>`;
   h+=`<div><div class="rlabel">05 · Five-Year Scenario Model</div><div class="asm-table">${years.map(y=>`<div class="asm-row"><span class="asm-k">${y.label}</span><span class="asm-v">Status ${fc(y.status_quo)} · Conservative ${fc(y.conservative)} · Base ${fc(y.base)} · Full Upside ${fc(y.aggressive)}</span></div>`).join('')}</div><div class="rtext" style="margin-top:12px">${ffrEsc(sim.key_insight||'')} These scenarios are implementation assumptions, not forecasts of what will happen.</div></div>`;
   const da=sim.decisionAnalysis||{}; h+=`<div><div class="rlabel">06 · Executive Decision Analysis</div><div class="rec-list"><div class="rec"><div class="rec-n">CFO</div><div class="rec-d"><strong>${ffrEsc(da.cfo?.focus||'Revenue quality and ROI')}</strong><br>${(da.cfo?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">GROWTH</div><div class="rec-d"><strong>${ffrEsc(da.growth?.focus||'Growth efficiency')}</strong><br>${(da.growth?.considerations||[]).map(ffrEsc).join('<br>')}</div></div><div class="rec"><div class="rec-n">BUYER</div><div class="rec-d"><strong>${ffrEsc(da.buyer?.focus||'Commercial clarity')}</strong><br>${(da.buyer?.considerations||[]).map(ffrEsc).join('<br>')}</div></div></div></div>`;
+  if(report.perspectives) h+=`<div><div class="rlabel">07 · Three Analytical Perspectives & Integrated Diagnosis</div>${ffrPerspectiveHTML(report.perspectives)}</div>`;
   document.getElementById('r-sections').innerHTML=h;
   if(document.getElementById('chart-ttl'))document.getElementById('chart-ttl').textContent=`5-Year Revenue Forecast — ${report.company}`;
   if(typeof renderChart==='function')renderChart('rev-chart',years,'chart1');
@@ -1963,6 +1968,7 @@ window.runDocSimulation=async function(){
     const data=await ffrJson(response);const report=data.full_report;
     if(!report?.simulation || !Array.isArray(report.simulation.years) || report.simulation.years.length!==5) throw new Error('The forecast service returned an incomplete five-year model.');
     const sim=report.simulation;
+    window.ffrFullForecastReport=report;
     S.docSimData={forecast:{years:sim.years,summary:{...(sim.summary||{}),key_insight:sim.key_insight||''},key_insight:sim.key_insight||''},decisionAnalysis:sim.decisionAnalysis||{}};S.simData=S.docSimData;
     setProgressS2(100,'Your forecast is ready.',5);document.getElementById('s2-progress').classList.remove('active');
     document.getElementById('s2-r-company').textContent=report.company;
@@ -1974,9 +1980,85 @@ window.runDocSimulation=async function(){
     [['s2-sc-sq',summary.status_quo_5yr],['s2-sc-con',summary.conservative_5yr],['s2-sc-base',summary.base_5yr],['s2-sc-agg',summary.aggressive_5yr]].forEach(([id,n])=>document.getElementById(id).textContent=fc(n||0));
     document.getElementById('s2-ki-text').textContent=sim.key_insight||'';
     document.getElementById('s2-debate-body').innerHTML=`<div class="rtext"><strong>Financial data quality:</strong> ${esc(report.financial?.dataQuality||'Not assessed')}<br><strong>Latest revenue detected:</strong> ${fc(report.financial?.latestRevenue||0)}<br><strong>Forecast basis:</strong> ${esc(sim.assumptions?.baseGrowthSource||'Stated assumptions')}<br><strong>Model note:</strong> ${esc(sim.assumptions?.realization||'Illustrative scenario assumptions.')}</div><div class="rtext" style="margin-top:12px">${Object.values(sim.decisionAnalysis||{}).map(x=>`<div style="margin-top:10px"><strong>${esc(x.focus||'')}</strong><br>${(x.considerations||[]).map(esc).join('<br>')}</div>`).join('')}</div>`;
+    if(report.perspectives) document.getElementById('s2-debate-body').innerHTML=ffrPerspectiveHTML(report.perspectives);
     document.getElementById('s2-result').classList.add('active');document.getElementById('s2-result').scrollIntoView({behavior:'smooth'});
   }catch(error){document.getElementById('s2-progress').classList.remove('active');document.getElementById('s2-error').classList.add('active');document.getElementById('s2-err-msg').textContent=error.message||'Forecast failed. Please try again.';button.disabled=false;document.getElementById('s2-form').style.display='block';}
 };
+
+
+// v3.2 full deterministic report rendering and exports.
+function ffrPerspectiveHTML(p){
+ const e=ffrEsc;
+ return [p.systems,p.quantitative,p.commercial].map((x,i)=>`<section class="rec" style="margin:12px 0;display:block"><div class="rec-n">PERSPECTIVE ${i+1}</div><div class="rec-t">${e(x.title)}</div><p class="rtext">${e(x.argument)}</p><div class="rtext"><strong>Evidence / calculations</strong><ul style="padding-left:22px">${(x.evidence||[]).map(y=>`<li>${e(y)}</li>`).join('')}</ul></div><p class="rtext"><strong>Challenge:</strong> ${e(x.challenge)}</p><p class="rtext"><strong>Next action:</strong> ${e(x.action)}</p></section>`).join('')+`<section class="rec" style="display:block"><div class="rec-t">${e(p.integrated.title)}</div><p class="rtext">${e(p.integrated.conclusion)}</p><strong>Shared findings</strong><ul style="padding-left:22px">${p.integrated.agreements.map(x=>`<li>${e(x)}</li>`).join('')}</ul><strong>Validation plan</strong><ol style="padding-left:22px">${p.integrated.nextSteps.map(x=>`<li>${e(x)}</li>`).join('')}</ol></section>`;
+}
+function ffrGetReport(kind){const report=kind==='forecast'?window.ffrFullForecastReport:window.ffrFullAuditReport;if(!report)throw Error('No complete report is available. Run the diagnostic first.');return report;}
+function ffrSections(report){
+ const sections=[],add=(name,lines)=>sections.push({name,lines:lines.map(x=>String(x??''))});
+ const p=report.perspectives||{},sim=report.simulation||{},fin=report.financial||{},o=report.opportunity||{};
+ add('Executive Summary',[`Company: ${report.company}`,`Report type: ${report.kind==='ffr-document-report'?'Financial forecast':'Website revenue audit'}`,`Generated: ${report.createdAt}`,`Stage: ${report.stage}`,`Framework: ${report.framework||'FlowForge deterministic quantification'}`,`Source quality: ${fin.dataQuality||'Public-page evidence only'}`,sim.key_insight||'', 'All opportunities and scenarios are illustrative, not observed revenue loss or guarantees.']);
+ if(report.pages){add('Crawl & Source Register',report.pages.map((x,i)=>`${i+1}. ${x.url} | ${x.title||''} | ${x.type||''} | CTA: ${(x.ctas||[]).join('; ')} | Forms: ${x.forms}`));add('Crawl Limitations',(report.crawlErrors||[]).map(x=>JSON.stringify(x)).concat(`Pages reviewed: ${report.pages.length}`));}
+ if(report.evidence)add('Evidence Register',report.evidence.map((x,i)=>`${i+1}. ${x.name||x.category||'Signal'} | ${x.observation||''} | ${x.url||''} | Severity: ${x.severity??'N/A'} | Confidence: ${x.confidence||'N/A'}`));
+ if(report.leaks)add('Ranked Revenue Friction',report.leaks.map((x,i)=>`${i+1}. ${x.title} | Severity: ${x.severity} | Score: ${x.score??'N/A'} | Confidence: ${x.confidence} | Evidence: ${(x.evidence||[]).map(y=>y.observation).join('; ')}`));
+ add('Quantification & Assumptions',[`Opportunity available: ${!!o.available}`,`Reason: ${o.reason||'N/A'}`,`Illustrative lower: ${o.oppLow??'Not calculated'}`,`Illustrative upper: ${o.oppHigh??'Not calculated'}`,`Qualified visitors (monthly): ${o.qv??'Not provided'}`,`Modeled friction fraction: ${o.fr??'N/A'}`,`DCR: ${o.dcr??'N/A'}`,`SQLR: ${o.sqlr??'N/A'}`,`Close rate: ${o.cr??'N/A'}`,`ACV: ${report.acv??'Not provided'}`,`Provenance: ${JSON.stringify(o.provenance||{})}`]);
+ if(report.recommendations)add('Prioritized Interventions',report.recommendations.map((x,i)=>`${i+1}. ${x.title} | ${x.priority} | Action: ${x.what} | Where: ${x.where} | Why: ${x.why} | Difficulty: ${x.difficulty}`));
+ add('Financial Source & Data Quality',[`Source type: ${report.sourceType||'Website / user inputs'}`,`Latest observed revenue: ${fin.latestRevenue??'N/A'}`,`Data quality: ${fin.dataQuality||'N/A'}`,`Historical observations: ${JSON.stringify(fin.historicalRevenue||[])}`,`Financial metrics: ${JSON.stringify(fin.metrics||{})}`]);
+ add('Five-Year Scenario Model',[`Opening revenue: ${sim.startRevenue??0}`,`Baseline growth: ${sim.baselineGrowth??0}`,`Baseline source: ${sim.assumptions?.baseGrowthSource||'Not specified'}`,`Opportunity used: ${sim.modeledOpportunity??0}`,...(sim.years||[]).map(y=>`${y.label}: Status quo ${y.status_quo}; Conservative ${y.conservative}; Base ${y.base}; Upside ${y.aggressive}`),`Cumulative totals: ${JSON.stringify(sim.summary||{})}`,`Model assumptions: ${JSON.stringify(sim.assumptions||{})}`]);
+ for(const key of ['systems','quantitative','commercial']){const x=p[key];if(x)add(x.title,[x.argument,'Supporting evidence:',...(x.evidence||[]),'Challenge: '+x.challenge,'Action: '+x.action]);}
+ if(p.integrated)add('Integrated Diagnosis',[p.integrated.conclusion,'Shared findings:',...p.integrated.agreements,'Validation plan:',...p.integrated.nextSteps]);
+ add('Professional Engagement',['You have seen what the diagnostic can uncover. A full revenue audit validates the hypotheses against actual company data and implementation economics.','Apply for a Full Revenue Audit: https://flowforgerevenue.solutions/services.html']);
+ return sections;
+}
+function ffrDownloadPDF(kind){
+ try{
+ const report=ffrGetReport(kind),lib=window.jspdf;if(!lib?.jsPDF)throw Error('PDF library did not load. Check connectivity and reload.');
+ const doc=new lib.jsPDF({unit:'mm',format:'a4'}),margin=17,pageW=210,pageH=297,contentW=176;let y=22;
+ function page(){doc.addPage();y=20;}
+ function lines(text,size=9,bold=false){doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(35,48,30);let wrapped=doc.splitTextToSize(String(text).replace(/[^\x20-\x7e\n]/g,' '),contentW);for(const line of wrapped){if(y>pageH-22)page();doc.text(line,margin,y);y+=size*.47+1.7;}y+=2;}
+ doc.setFillColor(242,248,222);doc.rect(0,0,pageW,44,'F');doc.setTextColor(48,77,25);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('FLOWFORGE REVENUE',margin,23);doc.setFontSize(11);doc.text('Complete Deterministic Diagnostic Report',margin,33);y=55;
+ for(const sec of ffrSections(report)){if(y>250)page();doc.setFillColor(242,248,222);doc.rect(margin,y-6,contentW,9,'F');lines(sec.name,11,true);y+=2;for(const item of sec.lines)lines(item,9);y+=5;}
+ const canvas=document.getElementById(kind==='forecast'?'s2-rev-chart':'rev-chart');if(canvas && canvas.width && canvas.height){try{page();lines('FIVE-YEAR SCENARIO VISUALIZATION',12,true);const png=canvas.toDataURL('image/png');doc.addImage(png,'PNG',margin,y,contentW,Math.min(115,contentW*canvas.height/canvas.width));}catch(chartError){console.warn('PDF chart omitted',chartError);}}
+ const count=doc.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(100,110,100);doc.text(`FlowForge Revenue | Illustrative, not verified revenue loss | Page ${i}/${count}`,margin,287);}
+ doc.save(`FFR-${kind}-${String(report.company||'report').replace(/[^a-z0-9-]/gi,'-')}.pdf`);
+ }catch(err){alert('PDF export failed: '+err.message);console.error(err);}
+}
+function ffrSheet(wb,name,rows,widths){const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=widths.map(w=>({wch:w}));ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(Math.max(0,widths.length-1))}${rows.length}`};ws['!freeze']={xSplit:0,ySplit:1};XLSX.utils.book_append_sheet(wb,ws,name);return ws;}
+function ffrXmlEscape(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function ffrInjectChart(binary){
+ // Adds a native OOXML line chart anchored to the Scenario Chart worksheet (the last worksheet).
+ if(!window.JSZip)throw Error('JSZip library unavailable; cannot embed a native Excel chart.');
+ const z=await JSZip.loadAsync(binary), wbXml=await z.file('xl/workbook.xml').async('string');
+ const names=[...wbXml.matchAll(/<sheet\b[^>]*name="([^"]+)"[^>]*\/>/g)];const idx=names.findIndex(m=>m[1]==='Scenario Chart');if(idx<0)throw Error('Chart worksheet missing.');
+ const sheetNo=idx+1,sp=`xl/worksheets/sheet${sheetNo}.xml`,xml=await z.file(sp).async('string');
+ z.file(sp,xml.replace('</worksheet>','<drawing r:id="rIdFFRChart"/></worksheet>').replace('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"','<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'));
+ const rels=`xl/worksheets/_rels/sheet${sheetNo}.xml.rels`;
+ let rel=z.file(rels)?await z.file(rels).async('string'):'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
+ rel=rel.replace('</Relationships>','<Relationship Id="rIdFFRChart" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>');z.file(rels,rel);
+ const draw=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><xdr:twoCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>9</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>9</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>28</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="2" name="Five-Year Revenue Scenarios"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>`;
+ z.file('xl/drawings/drawing1.xml',draw);
+ z.file('xl/drawings/_rels/drawing1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart1.xml"/></Relationships>');
+ const ref=`'Scenario Chart'!`,cols=['B','C','D','E'],labels=['Status Quo','Conservative','Base Case','Full Upside'];
+ const series=cols.map((col,i)=>`<c:ser><c:idx val="${i}"/><c:order val="${i}"/><c:tx><c:v>${labels[i]}</c:v></c:tx><c:spPr><a:ln w="25400"><a:solidFill><a:srgbClr val="${['9C5757','D49D3B','72954D','3E776A'][i]}"/></a:solidFill></a:ln></c:spPr><c:cat><c:strRef><c:f>${ref}$A$2:$A$6</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>${ref}$${col}$2:$${col}$6</c:f></c:numRef></c:val></c:ser>`).join('');
+ const chart=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US"/><a:t>Five-Year Revenue Scenarios</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:plotArea><c:layout/><c:lineChart><c:grouping val="standard"/>${series}<c:axId val="123456"/><c:axId val="123457"/></c:lineChart><c:catAx><c:axId val="123456"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="b"/><c:crossAx val="123457"/><c:tickLblPos val="nextTo"/></c:catAx><c:valAx><c:axId val="123457"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="l"/><c:crossAx val="123456"/><c:numFmt formatCode="#,##0" sourceLinked="0"/><c:tickLblPos val="nextTo"/></c:valAx></c:plotArea><c:legend><c:legendPos val="b"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>`;
+ z.file('xl/charts/chart1.xml',chart);
+ let types=await z.file('[Content_Types].xml').async('string');types=types.replace('</Types>','<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/><Override PartName="/xl/charts/chart1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/></Types>');z.file('[Content_Types].xml',types);
+ return z.generateAsync({type:'blob',compression:'DEFLATE'});
+}
+async function ffrDownloadExcel(kind){
+ try{
+ const report=ffrGetReport(kind);if(!window.XLSX)throw Error('Excel library did not load. Reload and retry.');
+ const wb=XLSX.utils.book_new(),sections=ffrSections(report),sim=report.simulation||{},p=report.perspectives||{};
+ ffrSheet(wb,'Executive Summary',sections[0].lines.map((v,i)=>[i===0?'Report overview':'Detail',v]),[22,100]);
+ for(const sec of sections.slice(1)){
+ let name=sec.name.replace(/[^a-zA-Z0-9 ]/g,'').slice(0,31),unique=name,k=2;while(wb.SheetNames.includes(unique)){unique=name.slice(0,27)+' '+k++;}
+ ffrSheet(wb,unique,[['Finding / Calculation','Detail'],...sec.lines.map((v,i)=>[i+1,v])],[24,115]);
+ }
+ const y=sim.years||[];
+ ffrSheet(wb,'Scenario Chart',[['Year','Status Quo','Conservative','Base Case','Full Upside'],...y.map(x=>[x.label,Number(x.status_quo||0),Number(x.conservative||0),Number(x.base||0),Number(x.aggressive||0)])],[24,24,24,24,24]);
+ let data=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+ let blob=await ffrInjectChart(data);
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`FFR-${kind}-${String(report.company||'report').replace(/[^a-z0-9-]/gi,'-')}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);
+ }catch(err){alert('Excel export failed: '+err.message);console.error(err);}
+}
 
 </script>
 </body>
