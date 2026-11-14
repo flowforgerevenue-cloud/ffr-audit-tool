@@ -22,6 +22,16 @@ const RULES=[
  {id:'H02',name:'Retention Signal',cat:'H',severity:3,applies:['home','product','solution'],test:p=>!hasAny(p.text,['renew','retention','retained','long-term','lifetime','churn'])}
 ];
 function runRules(page){
- const out=[]; for(const r of RULES){if(!r.applies.includes(page.type))continue; let failed=false; try{failed=r.test(page)}catch{} if(failed)out.push({rule:r.id,name:r.name,category:r.cat,severity:r.severity,page:page.url,observation:`${r.name} signal was not clearly observable on this page.`,evidence:excerpt(page.text, page.ctas[0]||page.title),confidence:page.text.length>300?'Medium':'Low'});} return out;
+ const out=[];
+ for(const r of RULES){
+  if(!r.applies.includes(page.type))continue;
+  let triggered=false;try{triggered=!!r.test(page)}catch{continue}
+  if(!triggered)continue;
+  const observed=r.id==='B03' || r.id==='B02';
+  const count=Array.isArray(page.forms)?page.forms.length:0;
+  const observation=r.id==='B03'?`Retrieved HTML contains ${count} input elements on the contact path; hidden and optional fields may be included. Completion friction is not proven.`:r.id==='B02'?`Retrieved CTAs were generic: ${(page.ctas||[]).slice(0,4).join(', ')}. Buyer abandonment was not measured.`:`The specified ${r.name.toLowerCase()} language was not detected in retrieved HTML text. This is an unverified hypothesis, not evidence of a deficient customer experience.`;
+  out.push({rule:r.id,name:r.name,category:r.cat,severity:r.severity,page:page.url,url:page.url,observation,state:observed?'observed':'unverified',evidence:excerpt(page.text,page.ctas[0]||page.title),confidence:observed?'Medium':'Low',limitation:'External HTML inspection; dynamic and authenticated content may be absent.'});
+ }
+ return out;
 }
 module.exports={RULES,runRules};

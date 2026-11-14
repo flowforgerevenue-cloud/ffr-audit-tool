@@ -11,16 +11,18 @@ module.exports = async function auditHandler(req, res) {
     if (!body.url || !body.company || !body.stage) {
       return json(res, 400, { success: false, error: 'Company, website and funding stage are required.' });
     }
+    if (!['USD','NGN','EUR','GBP'].includes(body.currency)) return json(res,400,{success:false,error:'Select a reporting currency.'});
+    if(!Number.isFinite(Number(body.currentRevenue))||Number(body.currentRevenue)<=0)return json(res,400,{success:false,error:'Enter positive annual revenue.'});
     const result = await runAudit(body);
     if (!result || !result.audit || !Array.isArray(result.audit.pages) || !Array.isArray(result.audit.leaks)) {
       throw new Error('The diagnostic engine returned an incomplete report structure.');
     }
     return json(res, 200, {
       success: true,
-      version: '3.1.0',
+      version: '3.4.1',
       full_report: result.audit,
       preview: result.preview,
-      framework: 'FlowForge Revenue Quantification Framework v3.1'
+      framework: 'FlowForge Revenue Quantification Framework v3.4.1'
     });
   } catch (error) {
     console.error('[FFR_AUDIT_ERROR]', error);

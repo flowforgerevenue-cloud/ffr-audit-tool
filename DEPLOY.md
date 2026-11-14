@@ -1,11 +1,11 @@
-# Deployment — FlowForge Revenue Diagnostic v3.1.0
+# FFR Diagnostic v3.4.1 — Deployment
 
-1. Create a clean GitHub repository and upload the contents of this project root (the files inside `ffr-audit-tool/`, not the enclosing folder).
-2. Import that repository into Vercel.
-3. Set the project Root Directory to `./` unless the repository contains this project inside a subfolder.
-4. Deploy using Vercel standard project detection. Keep the `api/` directory at the repository root so Vercel automatically registers `/api/audit`, `/api/simulate`, and `/api/health` as Node Functions. The included `vercel.json` only rewrites `/admin` to `/admin.html`; it deliberately does not override API routing with legacy `builds` or `routes` rules.
-5. Attach the existing diagnostic domain/path routing as already configured. The public entry path should remain `https://flowforgerevenue.solutions/audit-tool` through your current Cloudflare/Vercel routing.
-6. Optional: set `FFR_ADMIN_PASSWORD` in Vercel for the operations page. Do not add payment credentials; the payment layer has been removed.
-7. After deployment, verify `/api/health` reports version `3.1.0` and test POST requests to `/api/audit` and `/api/simulate`, then test one website diagnostic and one financial-document forecast. Download both PDF and Excel outputs.
+1. Preserve your existing v3.3/v3.4 production deployment until staging passes.
+2. Extract the release ZIP. Commit **all files at the GitHub repository root**, including `api/`, `engine/`, `rules/`, `data/`, `utils/`, `index.html`, `package.json`, `ffr-logo.png` and `vercel.json`.
+3. Push a new branch and let Vercel generate a **Preview** deployment. Keep the project Root Directory set to the repo root; use the included `package.json` (Node 24.x as configured). Do not add generative AI API keys.
+4. On the Preview domain: open `/api/health`, run a synthetic or authorized website audit, then upload `test-fixtures/fictional-fintech-annual-revenue.csv` or the matching PDF. Choose USD and declared annual revenue 1,250,000 to reconcile the fixture.
+5. Verify the Decision Room is populated; download both PDF and Excel reports, open Excel in Microsoft Excel or another OOXML spreadsheet application, and inspect the four-series/one-series chart behavior. Click the professional-audit CTA and ensure it opens `https://flowforgerevenue.solutions/services.html`.
+6. Check phone (320–390px), tablet (768px) and desktop (1440px) layouts, download behavior, and direct `/ffr-logo.png`.
+7. If the preview passes, promote to production. The existing Cloudflare `ffr-audit-tool-proxy` and its routes should remain unchanged. Check `https://flowforgerevenue.solutions/audit-tool` and the `/audit-tool/ffr-logo.png` asset through the Worker.
 
-Never upload `.env`, API secrets, or `.git` history. This package intentionally excludes them.
+**Important:** A user-uploaded narrative marketing report (including an older FFR Pomelo opportunity report) is not a company financial statement. The parser rejects unsupported revenue claims. The sample fixtures are **synthetic, not Pomelo financial information**.

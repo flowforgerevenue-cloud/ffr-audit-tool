@@ -2,6 +2,7 @@ const { cors, json, bodySize } = require('../utils/http');
 const { buildSimulation } = require('../engine/simulationEngine');
 const { normalize } = require('../engine/financialEngine');
 const { perspectives } = require('../engine/perspectivesEngine');
+const {check}=require('../engine/integrityEngine');
 
 module.exports = async function simulateHandler(req, res) {
   cors(res, req);
@@ -12,6 +13,7 @@ module.exports = async function simulateHandler(req, res) {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const company = String(body.company || '').trim();
     const currentRevenue = Number(body.currentRevenue);
+    if (!['USD','NGN','EUR','GBP'].includes(body.currency)) return json(res, 400, {success:false,error:'Choose a valid currency.'});
     if (!company) return json(res, 400, { success: false, error: 'Company name is required.' });
     if (!Number.isFinite(currentRevenue) || currentRevenue <= 0) {
       return json(res, 400, { success: false, error: 'Enter a valid positive current annual revenue figure.' });
@@ -22,7 +24,7 @@ module.exports = async function simulateHandler(req, res) {
       if (raw.length > 2800000) return json(res, 413, { success: false, error: 'Uploaded document is too large.' });
       decoded = Buffer.from(raw, 'base64').toString('utf8');
     }
-    const financial = normalize({ text: decoded, declaredRevenue: currentRevenue });
+    const financial = normalize({ text: decoded, declaredRevenue: currentRevenue, currency: body.currency });
     const simulation = buildSimulation({
       currentRevenue,
       opportunity: { available: false, reason: 'Document forecast is based on historical revenue and declared revenue; no website funnel opportunity is assumed.' },
@@ -30,18 +32,18 @@ module.exports = async function simulateHandler(req, res) {
       confidence: financial.dataQuality === 'High' ? 'High' : 'Medium'
     });
     const report = {
-      version: '3.1.0', kind: 'ffr-document-report', company,
+      version: '3.4.1', currency:body.currency, kind: 'ffr-document-report', company,
       stage: body.stage || 'Not specified', acv: Number(body.acv || 0),
       financial, simulation, sourceType: body.fileType || 'document',
       createdAt: new Date().toISOString(),
-      framework: 'FlowForge Revenue Quantification Framework v3.1'
+      framework: 'FlowForge Revenue Quantification Framework v3.4.1'
     };
-    report.perspectives = perspectives(report);
+    report.integrity=check(report); if(!report.integrity.ok)throw new Error(report.integrity.errors.join('; ')); report.perspectives = perspectives(report);
     if (!Array.isArray(report.simulation.years) || report.simulation.years.length !== 5) {
       throw new Error('The forecast engine did not produce five annual scenarios.');
     }
     return json(res, 200, {
-      success: true, version: '3.1.0', full_report: report,
+      success: true, version: '3.4.1', full_report: report,
       financialSummary: {
         latestRevenue: financial.latestRevenue,
         dataQuality: financial.dataQuality,

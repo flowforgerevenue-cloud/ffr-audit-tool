@@ -8,5 +8,5 @@ const FIXES={
  G:{title:'Tighten sales handoff',what:'Define qualification inputs, routing and the buyer’s next step after demo/contact.',where:'Demo/contact workflow',why:'Reduces leakage between marketing intent and sales execution.',difficulty:'Medium'},
  H:{title:'Expose expansion and retention mechanics',what:'Show how customers expand usage, renew and realize ongoing value.',where:'Product, customer and pricing pages',why:'Makes recurring revenue quality more visible.',difficulty:'Medium'}
 };
-function recommend(leaks){return leaks.slice(0,5).map((l,i)=>({...FIXES[l.id],category:l.category,priority:i===0?'Primary':i<3?'Secondary':'Later',impactScore:l.score}));}
+function recommend(leaks){return leaks.slice(0,5).map((l,i)=>{const source=FIXES[l.id];return {...source,title:l.evidenceStatus==='observed-surface-signal'?source.title:'Validate: '+source.title,category:l.category,priority:i===0?'Primary':i<3?'Secondary':'Later',impactScore:l.score,evidenceStatus:l.evidenceStatus,why:l.evidenceStatus==='observed-surface-signal'?source.why:'Unverified public-HTML signal; confirm the actual buyer journey before modifying the experience.'};});}
 module.exports={recommend};

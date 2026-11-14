@@ -1,12 +1,7 @@
 {
   "name": "ffr-audit-tool",
-  "version": "3.2.0",
+  "version": "3.4.1",
   "private": true,
-  "engines": {
-    "node": "24.x"
-  },
-  "scripts": {
-    "test": "node api/test.js",
-    "check": "node api/test.js"
-  }
+  "engines": {"node":"24.x"},
+  "scripts": {"test":"node api/test.js && node api/test-v34.js && node api/test-v341.js", "check":"npm test"}
 }
