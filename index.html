@@ -585,13 +585,14 @@
     @media(max-width:640px){.nav{padding:0 16px}.hero{padding-top:96px}.card-body{padding:20px}.card-head{padding:18px 20px}}
 
   
-/* v3.2 responsive report and export controls */
+/* v3.3 responsive report and export controls */
 .ffr-downloads{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 8px;align-items:center}
 .ffr-downloads button{min-height:44px;white-space:normal}
 .ffr-conversion{display:block}.ffr-conversion>div{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.ffr-conversion .btn-primary{max-width:100%;white-space:normal;text-align:center}
 .rtext,.ev-item,.asm-v,.rec-d,.result-meta,.chart-summary-box{overflow-wrap:anywhere;word-break:normal}
 @media(max-width:720px){.nav{padding:0 12px}.nav-links{gap:8px}.nav-link{font-size:11px}.logo{font-size:12px}.logo img{max-width:35px;height:auto}.wrap{padding:20px 12px 65px}.hero{padding:94px 14px 35px}.card-head,.card-body,.result-header,.result-body{padding-left:15px!important;padding-right:15px!important}.result-header,.result-actions,.session-pills{flex-wrap:wrap;gap:10px}.pill{padding:9px 12px;font-size:11px}.metrics{display:grid!important;grid-template-columns:1fr!important}.rsections{padding:15px!important}.asm-row{flex-wrap:wrap;gap:6px}.asm-v{max-width:100%;text-align:left}.chart-wrap{min-height:230px;overflow-x:auto}.ffr-downloads{flex-direction:column;align-items:stretch}.ffr-downloads button{width:100%}.cta-strip{padding:16px!important}.ffr-conversion .btn-primary{width:100%}}
 @media(max-width:390px){.nav-links .nav-link{display:none}.hero h1{font-size:28px}.result-company{font-size:20px}}
+@media(max-width:480px){.nav{height:auto;min-height:62px}.nav-links{flex-wrap:wrap;justify-content:flex-end}.hero h1{font-size:clamp(26px,7vw,38px)}.result-wrap,.card{max-width:100%;overflow-wrap:anywhere}.scenarios,.sc-grid{grid-template-columns:1fr!important}.debate-wrap,.chart-wrap{max-width:100%}canvas{max-width:100%}.rec,.rtext{overflow-wrap:anywhere}}
 </style>
 </head>
 <body>
@@ -877,8 +878,8 @@
         <div style="padding:0 28px 20px;">
           <div class="debate-wrap">
             <div class="debate-head">
-              <h3>Three Perspectives on This Opportunity</h3>
-              <p>Three independent rule-based analyses examine evidence, financial implications and commercial decisions; no generative AI is used.</p>
+              <h3>The Revenue Decision Room</h3>
+              <p>A CFO, enterprise buyer and investor challenge the findings, question the assumptions and reach a practical decision.</p>
             </div>
             <div class="debate-body" id="debate-body"></div>
           </div>
@@ -906,7 +907,7 @@
     <div class="card" id="s2-form">
       <div class="card-head">
         <h2>Upload a Document for Revenue Forecasting</h2>
-        <p>Already have a revenue report, financial statement, audit, or data export? Upload it and get a 5-year revenue forecast with three perspectives on what the numbers mean for your growth trajectory.</p>
+        <p>Already have a revenue report, financial statement, audit, or data export? Upload it and get a 5-year revenue forecast with a structured CFO, buyer and investor review of the evidence and its limitations.</p>
       </div>
       <div class="card-body">
 
@@ -1059,8 +1060,8 @@
         <!-- Debate -->
         <div class="debate-wrap">
           <div class="debate-head">
-            <h3>Three Perspectives on Your Revenue Data</h3>
-            <p>Three independent deterministic analyses assess revenue systems, financial assumptions and commercial decisions.</p>
+            <h3>The Revenue Decision Room</h3>
+            <p>A CFO, enterprise buyer and investor challenge the forecast, debate its risks and identify the next decision.</p>
           </div>
           <div class="debate-body" id="s2-debate-body"></div>
         </div>
@@ -1568,7 +1569,7 @@ function renderChart(canvasId, years, key) {
           borderDash:[4,4],
           fill:false,
         },
-      ],
+      ].filter((dataset,i,all)=>i===3 || years.some((row,j)=>Number(dataset.data[j])!==Number(row.status_quo||row.statusQuo||0))),
     },
     options:{
       responsive:true,
@@ -1974,12 +1975,12 @@ window.runDocSimulation=async function(){
     document.getElementById('s2-r-company').textContent=report.company;
     document.getElementById('s2-r-meta').textContent=`Financial document · ${report.stage} · ${new Date(report.createdAt).toLocaleDateString()}`;
     document.getElementById('s2-chart-ttl').textContent=`Five-Year Revenue Scenarios — ${report.company}`;
-    document.getElementById('s2-chart-summary-text').textContent='Historical revenue is used where available. Otherwise, the model uses a clearly disclosed 5% baseline assumption. Scenario realization assumptions are illustrative, not predictions.';
+    document.getElementById('s2-chart-summary-text').textContent=sim.scenariosDistinct?'Scenario differences depend on the disclosed modeled opportunity and realization assumptions. These are not predictions.':'Only one baseline is defensible: all four series coincide because the uploaded document does not establish a recoverable opportunity. The 5% growth is an illustrative assumption, not observed growth.';
     if(typeof renderChart==='function')renderChart('s2-rev-chart',sim.years,'chart2');
     const summary=sim.summary||{};
     [['s2-sc-sq',summary.status_quo_5yr],['s2-sc-con',summary.conservative_5yr],['s2-sc-base',summary.base_5yr],['s2-sc-agg',summary.aggressive_5yr]].forEach(([id,n])=>document.getElementById(id).textContent=fc(n||0));
     document.getElementById('s2-ki-text').textContent=sim.key_insight||'';
-    document.getElementById('s2-debate-body').innerHTML=`<div class="rtext"><strong>Financial data quality:</strong> ${esc(report.financial?.dataQuality||'Not assessed')}<br><strong>Latest revenue detected:</strong> ${fc(report.financial?.latestRevenue||0)}<br><strong>Forecast basis:</strong> ${esc(sim.assumptions?.baseGrowthSource||'Stated assumptions')}<br><strong>Model note:</strong> ${esc(sim.assumptions?.realization||'Illustrative scenario assumptions.')}</div><div class="rtext" style="margin-top:12px">${Object.values(sim.decisionAnalysis||{}).map(x=>`<div style="margin-top:10px"><strong>${esc(x.focus||'')}</strong><br>${(x.considerations||[]).map(esc).join('<br>')}</div>`).join('')}</div>`;
+    document.getElementById('s2-debate-body').innerHTML=`<div class="rtext"><strong>Financial data quality:</strong> ${esc(report.financial?.dataQuality||'Not assessed')}<br><strong>Declared annual revenue:</strong> ${fc(report.financial?.declaredRevenue||0)}<br><strong>Document classification:</strong> ${esc(report.financial?.documentType||'Not assessed')}<br><strong>Parsing warnings:</strong> ${esc((report.financial?.warnings||[]).join(' ')||'None')}<br><strong>Forecast basis:</strong> ${esc(sim.assumptions?.baseGrowthSource||'Stated assumptions')}<br><strong>Model note:</strong> ${esc(sim.assumptions?.realization||'Illustrative scenario assumptions.')}</div><div class="rtext" style="margin-top:12px">${Object.values(sim.decisionAnalysis||{}).map(x=>`<div style="margin-top:10px"><strong>${esc(x.focus||'')}</strong><br>${(x.considerations||[]).map(esc).join('<br>')}</div>`).join('')}</div>`;
     if(report.perspectives) document.getElementById('s2-debate-body').innerHTML=ffrPerspectiveHTML(report.perspectives);
     document.getElementById('s2-result').classList.add('active');document.getElementById('s2-result').scrollIntoView({behavior:'smooth'});
   }catch(error){document.getElementById('s2-progress').classList.remove('active');document.getElementById('s2-error').classList.add('active');document.getElementById('s2-err-msg').textContent=error.message||'Forecast failed. Please try again.';button.disabled=false;document.getElementById('s2-form').style.display='block';}
@@ -1989,23 +1990,30 @@ window.runDocSimulation=async function(){
 // v3.2 full deterministic report rendering and exports.
 function ffrPerspectiveHTML(p){
  const e=ffrEsc;
- return [p.systems,p.quantitative,p.commercial].map((x,i)=>`<section class="rec" style="margin:12px 0;display:block"><div class="rec-n">PERSPECTIVE ${i+1}</div><div class="rec-t">${e(x.title)}</div><p class="rtext">${e(x.argument)}</p><div class="rtext"><strong>Evidence / calculations</strong><ul style="padding-left:22px">${(x.evidence||[]).map(y=>`<li>${e(y)}</li>`).join('')}</ul></div><p class="rtext"><strong>Challenge:</strong> ${e(x.challenge)}</p><p class="rtext"><strong>Next action:</strong> ${e(x.action)}</p></section>`).join('')+`<section class="rec" style="display:block"><div class="rec-t">${e(p.integrated.title)}</div><p class="rtext">${e(p.integrated.conclusion)}</p><strong>Shared findings</strong><ul style="padding-left:22px">${p.integrated.agreements.map(x=>`<li>${e(x)}</li>`).join('')}</ul><strong>Validation plan</strong><ol style="padding-left:22px">${p.integrated.nextSteps.map(x=>`<li>${e(x)}</li>`).join('')}</ol></section>`;
+ const personas=[p.systems,p.quantitative,p.commercial].filter(Boolean).map((x,i)=>`<section class="rec" style="margin:12px 0;display:block"><div class="rec-n">REVIEW ${i+1} · ${e(x.role||'Analyst')}</div><div class="rec-t">${e(x.title)}</div><p class="rtext">${e(x.argument)}</p><div class="rtext"><strong>Evidence and inputs</strong><ul style="padding-left:22px">${(x.evidence||[]).map(y=>`<li>${e(y)}</li>`).join('')}</ul></div><p class="rtext"><strong>Critical objection:</strong> ${e(x.challenge)}</p><p class="rtext"><strong>Required decision:</strong> ${e(x.action)}</p></section>`).join('');
+ const debate=`<section class="rec" style="display:block"><div class="rec-t">Cross-examination · Challenge and response</div>${(p.debate||[]).map(x=>`<p class="rtext"><strong>${e(x.speaker)} challenges ${e(x.respondsTo)}:</strong> ${e(x.critique)}</p><p class="rtext" style="padding-left:12px;border-left:2px solid var(--accent)">${e(x.response)}</p>`).join('')}</section>`;
+ const i=p.integrated||{};
+ return personas+debate+`<section class="rec" style="display:block"><div class="rec-t">${e(i.title||'Integrated decision')}</div><p class="rtext">${e(i.conclusion||'')}</p><strong>Agreed findings</strong><ul style="padding-left:22px">${(i.agreements||[]).map(x=>`<li>${e(x)}</li>`).join('')}</ul><strong>Validation plan</strong><ol style="padding-left:22px">${(i.nextSteps||[]).map(x=>`<li>${e(x)}</li>`).join('')}</ol></section>`;
 }
 function ffrGetReport(kind){const report=kind==='forecast'?window.ffrFullForecastReport:window.ffrFullAuditReport;if(!report)throw Error('No complete report is available. Run the diagnostic first.');return report;}
 function ffrSections(report){
  const sections=[],add=(name,lines)=>sections.push({name,lines:lines.map(x=>String(x??''))});
  const p=report.perspectives||{},sim=report.simulation||{},fin=report.financial||{},o=report.opportunity||{};
- add('Executive Summary',[`Company: ${report.company}`,`Report type: ${report.kind==='ffr-document-report'?'Financial forecast':'Website revenue audit'}`,`Generated: ${report.createdAt}`,`Stage: ${report.stage}`,`Framework: ${report.framework||'FlowForge deterministic quantification'}`,`Source quality: ${fin.dataQuality||'Public-page evidence only'}`,sim.key_insight||'', 'All opportunities and scenarios are illustrative, not observed revenue loss or guarantees.']);
- if(report.pages){add('Crawl & Source Register',report.pages.map((x,i)=>`${i+1}. ${x.url} | ${x.title||''} | ${x.type||''} | CTA: ${(x.ctas||[]).join('; ')} | Forms: ${x.forms}`));add('Crawl Limitations',(report.crawlErrors||[]).map(x=>JSON.stringify(x)).concat(`Pages reviewed: ${report.pages.length}`));}
- if(report.evidence)add('Evidence Register',report.evidence.map((x,i)=>`${i+1}. ${x.name||x.category||'Signal'} | ${x.observation||''} | ${x.url||''} | Severity: ${x.severity??'N/A'} | Confidence: ${x.confidence||'N/A'}`));
- if(report.leaks)add('Ranked Revenue Friction',report.leaks.map((x,i)=>`${i+1}. ${x.title} | Severity: ${x.severity} | Score: ${x.score??'N/A'} | Confidence: ${x.confidence} | Evidence: ${(x.evidence||[]).map(y=>y.observation).join('; ')}`));
- add('Quantification & Assumptions',[`Opportunity available: ${!!o.available}`,`Reason: ${o.reason||'N/A'}`,`Illustrative lower: ${o.oppLow??'Not calculated'}`,`Illustrative upper: ${o.oppHigh??'Not calculated'}`,`Qualified visitors (monthly): ${o.qv??'Not provided'}`,`Modeled friction fraction: ${o.fr??'N/A'}`,`DCR: ${o.dcr??'N/A'}`,`SQLR: ${o.sqlr??'N/A'}`,`Close rate: ${o.cr??'N/A'}`,`ACV: ${report.acv??'Not provided'}`,`Provenance: ${JSON.stringify(o.provenance||{})}`]);
- if(report.recommendations)add('Prioritized Interventions',report.recommendations.map((x,i)=>`${i+1}. ${x.title} | ${x.priority} | Action: ${x.what} | Where: ${x.where} | Why: ${x.why} | Difficulty: ${x.difficulty}`));
- add('Financial Source & Data Quality',[`Source type: ${report.sourceType||'Website / user inputs'}`,`Latest observed revenue: ${fin.latestRevenue??'N/A'}`,`Data quality: ${fin.dataQuality||'N/A'}`,`Historical observations: ${JSON.stringify(fin.historicalRevenue||[])}`,`Financial metrics: ${JSON.stringify(fin.metrics||{})}`]);
- add('Five-Year Scenario Model',[`Opening revenue: ${sim.startRevenue??0}`,`Baseline growth: ${sim.baselineGrowth??0}`,`Baseline source: ${sim.assumptions?.baseGrowthSource||'Not specified'}`,`Opportunity used: ${sim.modeledOpportunity??0}`,...(sim.years||[]).map(y=>`${y.label}: Status quo ${y.status_quo}; Conservative ${y.conservative}; Base ${y.base}; Upside ${y.aggressive}`),`Cumulative totals: ${JSON.stringify(sim.summary||{})}`,`Model assumptions: ${JSON.stringify(sim.assumptions||{})}`]);
- for(const key of ['systems','quantitative','commercial']){const x=p[key];if(x)add(x.title,[x.argument,'Supporting evidence:',...(x.evidence||[]),'Challenge: '+x.challenge,'Action: '+x.action]);}
- if(p.integrated)add('Integrated Diagnosis',[p.integrated.conclusion,'Shared findings:',...p.integrated.agreements,'Validation plan:',...p.integrated.nextSteps]);
- add('Professional Engagement',['You have seen what the diagnostic can uncover. A full revenue audit validates the hypotheses against actual company data and implementation economics.','Apply for a Full Revenue Audit: https://flowforgerevenue.solutions/services.html']);
+ const num=n=>typeof n==='number'?n.toLocaleString('en-US',{maximumFractionDigits:2}):String(n??'Not available');
+ const pct=n=>typeof n==='number'?(n*100).toFixed(1)+'%':'Not available';
+ const isAudit=Array.isArray(report.leaks),date=report.createdAt?new Date(report.createdAt).toLocaleDateString():'Not specified';
+ add('Executive Decision',[`Company: ${report.company}`,`Assessment: ${isAudit?'Public website revenue diagnostic':'Uploaded-document financial assessment'}`,`Date: ${date} | Stage: ${report.stage||'Not specified'}`,`Top finding: ${isAudit?(report.leaks?.[0]?.title||'No ranked issue established'):(fin.documentType||'Document not classified')}`,`Evidence standard: external observations and/or user declarations; not audited financial statements.`,sim.key_insight||'No defensible scenario conclusion.',`Decision: validate the evidence and measurable commercial economics before investment.`]);
+ add('Scope, Data Quality and Limitations',[`Source: ${report.sourceType||'Public website and user-provided inputs'}`,`Document classification: ${fin.documentType||'Not applicable'}`,`Financial source quality: ${fin.dataQuality||'Not established'}`,`Revenue basis: ${fin.revenueBasis||'Not established'}`,`Declared annual revenue: ${num(fin.declaredRevenue)}`,`Explicit dated historical revenue observations: ${(fin.historicalRevenue||[]).length}`,...(fin.warnings||[]).map(x=>'Data warning: '+x),`Currency: not inferred from an unlabelled input; confirm currency before commercial use.`,`All figures are illustrative and are not claims of verified revenue loss.`]);
+ if(isAudit){add('Priority Findings',(report.leaks||[]).slice(0,12).map((x,i)=>`${i+1}. ${x.title} | Score ${num(x.score)} | Confidence ${x.confidence||'Not assessed'} | Hypothesis, not established loss.`));
+ add('Evidence and Source References',(report.evidence||[]).slice(0,35).map((x,i)=>`${i+1}. ${x.name||x.category||'Signal'} | ${x.observation||'No specific observation'} | Source: ${x.url||'Not recorded'}`));
+ add('Website Coverage',[`Pages scanned: ${(report.pages||[]).length}`,`Crawl limitations: ${(report.crawlErrors||[]).length}`,...(report.pages||[]).map((x,i)=>`${i+1}. ${x.title||'Untitled'} | ${x.url} | Page type: ${x.type||'other'}`)]);
+ add('Intervention Priorities',(report.recommendations||[]).map((x,i)=>`${i+1}. ${x.title}. ${x.what}. Location: ${x.where}. Why: ${x.why}. Effort: ${x.difficulty}.`));}
+ add('Opportunity Calculation',[`Quantification available: ${o.available?'Yes, conditional':'No'}`,`Lower modeled opportunity: ${o.available?num(o.oppLow):'Not calculated'}`,`Upper modeled opportunity: ${o.available?num(o.oppHigh):'Not calculated'}`,`Qualified monthly visitors: ${num(o.qv)}`,`Recoverable friction proxy: ${pct(o.fr)} (assumption, not observed loss)`,`Demo conversion: ${pct(o.dcr)}`,`SQL conversion: ${pct(o.sqlr)}`,`Close rate: ${pct(o.cr)}`,`ACV input: ${num(report.acv)}`,...Object.entries(o.provenance||{}).map(([k,v])=>`${k.toUpperCase()} source: ${v}`),`Avoid summing overlapping friction categories.`]);
+ add('Five-Year Model',[`Opening annual revenue: ${num(sim.startRevenue)}`,`Baseline annual growth: ${pct(sim.baselineGrowth)}`,`Growth provenance: ${sim.assumptions?.baseGrowthSource||'Not established'}`,`Incremental recovery opportunity: ${num(sim.modeledOpportunity)}`,`Distinct scenario support: ${sim.scenariosDistinct?'Illustrative opportunity assumptions':'None: four lines coincide by design'}`,...(sim.years||[]).map(y=>`${y.label}: Baseline ${num(y.status_quo)} | Conservative ${num(y.conservative)} | Base ${num(y.base)} | Upside ${num(y.aggressive)}`),...Object.entries(sim.summary||{}).map(([k,v])=>`${k.replace(/_/g,' ')}: ${num(v)}`),`Scenarios are conditional illustrations, not forecasts with validated probabilities.`]);
+ for(const k of ['systems','quantitative','commercial']){const x=p[k];if(x)add(x.title,[x.argument,'Evidence and inputs:',...(x.evidence||[]),'Critical objection: '+x.challenge,'Required decision: '+x.action]);}
+ if(p.debate?.length)add('Adversarial Review: Challenges and Replies',p.debate.flatMap(x=>[`${x.speaker} challenges ${x.respondsTo}: ${x.critique}`,x.response]));
+ if(p.integrated)add('Integrated Investment Decision',[p.integrated.conclusion,'Consensus:',...p.integrated.agreements,'Next verification steps:',...p.integrated.nextSteps]);
+ add('Next Step: Professional Audit',['The diagnostic highlights what should be tested. A full audit validates the evidence, calculates company-specific economics and prioritizes implementation.','Apply for a Full Revenue Audit: https://flowforgerevenue.solutions/services.html']);
  return sections;
 }
 function ffrDownloadPDF(kind){
@@ -2014,16 +2022,16 @@ function ffrDownloadPDF(kind){
  const doc=new lib.jsPDF({unit:'mm',format:'a4'}),margin=17,pageW=210,pageH=297,contentW=176;let y=22;
  function page(){doc.addPage();y=20;}
  function lines(text,size=9,bold=false){doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(35,48,30);let wrapped=doc.splitTextToSize(String(text).replace(/[^\x20-\x7e\n]/g,' '),contentW);for(const line of wrapped){if(y>pageH-22)page();doc.text(line,margin,y);y+=size*.47+1.7;}y+=2;}
- doc.setFillColor(242,248,222);doc.rect(0,0,pageW,44,'F');doc.setTextColor(48,77,25);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('FLOWFORGE REVENUE',margin,23);doc.setFontSize(11);doc.text('Complete Deterministic Diagnostic Report',margin,33);y=55;
+ doc.setFillColor(242,248,222);doc.rect(0,0,pageW,44,'F');doc.setTextColor(48,77,25);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('FLOWFORGE REVENUE',margin,23);doc.setFontSize(11);doc.text('Revenue Diagnostic | Executive Review',margin,33);y=55;
  for(const sec of ffrSections(report)){if(y>250)page();doc.setFillColor(242,248,222);doc.rect(margin,y-6,contentW,9,'F');lines(sec.name,11,true);y+=2;for(const item of sec.lines)lines(item,9);y+=5;}
- const canvas=document.getElementById(kind==='forecast'?'s2-rev-chart':'rev-chart');if(canvas && canvas.width && canvas.height){try{page();lines('FIVE-YEAR SCENARIO VISUALIZATION',12,true);const png=canvas.toDataURL('image/png');doc.addImage(png,'PNG',margin,y,contentW,Math.min(115,contentW*canvas.height/canvas.width));}catch(chartError){console.warn('PDF chart omitted',chartError);}}
- const count=doc.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(100,110,100);doc.text(`FlowForge Revenue | Illustrative, not verified revenue loss | Page ${i}/${count}`,margin,287);}
+ const canvas=document.getElementById(kind==='forecast'?'s2-rev-chart':'rev-chart');if(canvas && canvas.width && canvas.height){try{if(y>170)page();lines('FIVE-YEAR SCENARIO VISUALIZATION',12,true);const png=canvas.toDataURL('image/png');doc.addImage(png,'PNG',margin,y,contentW,Math.min(115,contentW*canvas.height/canvas.width));}catch(chartError){console.warn('PDF chart omitted',chartError);}}
+ const count=doc.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(100,110,100);doc.text(`FlowForge Revenue  |  Conditional analysis, not verified loss  |  ${i}/${count}`,margin,287);}
  doc.save(`FFR-${kind}-${String(report.company||'report').replace(/[^a-z0-9-]/gi,'-')}.pdf`);
  }catch(err){alert('PDF export failed: '+err.message);console.error(err);}
 }
 function ffrSheet(wb,name,rows,widths){const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=widths.map(w=>({wch:w}));ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(Math.max(0,widths.length-1))}${rows.length}`};ws['!freeze']={xSplit:0,ySplit:1};XLSX.utils.book_append_sheet(wb,ws,name);return ws;}
 function ffrXmlEscape(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-async function ffrInjectChart(binary){
+async function ffrInjectChart(binary,distinct=true){
  // Adds a native OOXML line chart anchored to the Scenario Chart worksheet (the last worksheet).
  if(!window.JSZip)throw Error('JSZip library unavailable; cannot embed a native Excel chart.');
  const z=await JSZip.loadAsync(binary), wbXml=await z.file('xl/workbook.xml').async('string');
@@ -2037,7 +2045,7 @@ async function ffrInjectChart(binary){
  z.file('xl/drawings/drawing1.xml',draw);
  z.file('xl/drawings/_rels/drawing1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart1.xml"/></Relationships>');
  const ref=`'Scenario Chart'!`,cols=['B','C','D','E'],labels=['Status Quo','Conservative','Base Case','Full Upside'];
- const series=cols.map((col,i)=>`<c:ser><c:idx val="${i}"/><c:order val="${i}"/><c:tx><c:v>${labels[i]}</c:v></c:tx><c:spPr><a:ln w="25400"><a:solidFill><a:srgbClr val="${['9C5757','D49D3B','72954D','3E776A'][i]}"/></a:solidFill></a:ln></c:spPr><c:cat><c:strRef><c:f>${ref}$A$2:$A$6</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>${ref}$${col}$2:$${col}$6</c:f></c:numRef></c:val></c:ser>`).join('');
+ const series=cols.map((col,i)=>`<c:ser><c:idx val="${i}"/><c:order val="${i}"/><c:tx><c:v>${labels[i]}</c:v></c:tx><c:spPr><a:ln w="25400"><a:solidFill><a:srgbClr val="${['9C5757','D49D3B','72954D','3E776A'][i]}"/></a:solidFill></a:ln></c:spPr><c:cat><c:strRef><c:f>${ref}$A$2:$A$6</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>${ref}$${col}$2:$${col}$6</c:f></c:numRef></c:val></c:ser>`).filter((_,i)=>distinct||i===0).join('');
  const chart=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US"/><a:t>Five-Year Revenue Scenarios</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:plotArea><c:layout/><c:lineChart><c:grouping val="standard"/>${series}<c:axId val="123456"/><c:axId val="123457"/></c:lineChart><c:catAx><c:axId val="123456"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="b"/><c:crossAx val="123457"/><c:tickLblPos val="nextTo"/></c:catAx><c:valAx><c:axId val="123457"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="l"/><c:crossAx val="123456"/><c:numFmt formatCode="#,##0" sourceLinked="0"/><c:tickLblPos val="nextTo"/></c:valAx></c:plotArea><c:legend><c:legendPos val="b"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>`;
  z.file('xl/charts/chart1.xml',chart);
  let types=await z.file('[Content_Types].xml').async('string');types=types.replace('</Types>','<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/><Override PartName="/xl/charts/chart1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/></Types>');z.file('[Content_Types].xml',types);
@@ -2047,7 +2055,7 @@ async function ffrDownloadExcel(kind){
  try{
  const report=ffrGetReport(kind);if(!window.XLSX)throw Error('Excel library did not load. Reload and retry.');
  const wb=XLSX.utils.book_new(),sections=ffrSections(report),sim=report.simulation||{},p=report.perspectives||{};
- ffrSheet(wb,'Executive Summary',sections[0].lines.map((v,i)=>[i===0?'Report overview':'Detail',v]),[22,100]);
+ ffrSheet(wb,'Executive Summary',[['FLOWFORGE REVENUE | EXECUTIVE DECISION','REPORT FINDINGS'],...sections[0].lines.map((v,i)=>['Finding '+(i+1),v])],[27,100]);
  for(const sec of sections.slice(1)){
  let name=sec.name.replace(/[^a-zA-Z0-9 ]/g,'').slice(0,31),unique=name,k=2;while(wb.SheetNames.includes(unique)){unique=name.slice(0,27)+' '+k++;}
  ffrSheet(wb,unique,[['Finding / Calculation','Detail'],...sec.lines.map((v,i)=>[i+1,v])],[24,115]);
@@ -2055,7 +2063,7 @@ async function ffrDownloadExcel(kind){
  const y=sim.years||[];
  ffrSheet(wb,'Scenario Chart',[['Year','Status Quo','Conservative','Base Case','Full Upside'],...y.map(x=>[x.label,Number(x.status_quo||0),Number(x.conservative||0),Number(x.base||0),Number(x.aggressive||0)])],[24,24,24,24,24]);
  let data=XLSX.write(wb,{bookType:'xlsx',type:'array'});
- let blob=await ffrInjectChart(data);
+ let blob=await ffrInjectChart(data,!!sim.scenariosDistinct);
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`FFR-${kind}-${String(report.company||'report').replace(/[^a-z0-9-]/gi,'-')}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);
  }catch(err){alert('Excel export failed: '+err.message);console.error(err);}
 }
