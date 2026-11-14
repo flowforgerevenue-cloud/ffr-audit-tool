@@ -593,6 +593,12 @@
 @media(max-width:720px){.nav{padding:0 12px}.nav-links{gap:8px}.nav-link{font-size:11px}.logo{font-size:12px}.logo img{max-width:35px;height:auto}.wrap{padding:20px 12px 65px}.hero{padding:94px 14px 35px}.card-head,.card-body,.result-header,.result-body{padding-left:15px!important;padding-right:15px!important}.result-header,.result-actions,.session-pills{flex-wrap:wrap;gap:10px}.pill{padding:9px 12px;font-size:11px}.metrics{display:grid!important;grid-template-columns:1fr!important}.rsections{padding:15px!important}.asm-row{flex-wrap:wrap;gap:6px}.asm-v{max-width:100%;text-align:left}.chart-wrap{min-height:230px;overflow-x:auto}.ffr-downloads{flex-direction:column;align-items:stretch}.ffr-downloads button{width:100%}.cta-strip{padding:16px!important}.ffr-conversion .btn-primary{width:100%}}
 @media(max-width:390px){.nav-links .nav-link{display:none}.hero h1{font-size:28px}.result-company{font-size:20px}}
 @media(max-width:480px){.nav{height:auto;min-height:62px}.nav-links{flex-wrap:wrap;justify-content:flex-end}.hero h1{font-size:clamp(26px,7vw,38px)}.result-wrap,.card{max-width:100%;overflow-wrap:anywhere}.scenarios,.sc-grid{grid-template-columns:1fr!important}.debate-wrap,.chart-wrap{max-width:100%}canvas{max-width:100%}.rec,.rtext{overflow-wrap:anywhere}}
+
+/* A withheld recovery scenario is not a zero-upside projection. */
+.scenario-grid.ffr-withheld-grid { grid-template-columns: minmax(0,1fr) minmax(0,2fr); }
+.ffr-withheld-notice { border: 1px solid var(--border); padding: 18px 22px; border-radius: 12px; background: var(--surface); color: var(--text-sec); font-size: 13px; line-height: 1.7; }
+.ffr-withheld-notice strong { color: var(--text-pri); display:block; font-size: 14px; margin-bottom: 5px; }
+@media (max-width: 640px) { .scenario-grid.ffr-withheld-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -837,7 +843,7 @@
         <div style="padding:0 28px 20px;">
           <div class="scenario-grid">
             <div class="sc sc-status-quo">
-              <div class="sc-lbl">Status Quo (No Fix)</div>
+              <div class="sc-lbl">Comparison baseline</div>
               <div class="sc-val" id="sc-sq"></div>
               <div class="sc-note">5-yr cumulative · baseline</div>
             </div>
@@ -1014,7 +1020,7 @@
         <!-- Scenarios -->
         <div class="scenario-grid">
           <div class="sc sc-status-quo">
-            <div class="sc-lbl">Status Quo (No Change)</div>
+            <div class="sc-lbl">Comparison baseline</div>
             <div class="sc-val" id="s2-sc-sq"></div>
             <div class="sc-note">5-yr cumulative</div>
           </div>
@@ -1536,7 +1542,7 @@ function renderChart(canvasId, years, key) {
           fill:false,
         },
         {
-          label:'Status Quo (No Fix)',
+          label:'Comparison baseline',
           data: years.map(y=>y.status_quo||y.statusQuo||years[0]?.conservative||0),
           borderColor:'#f87171',
           backgroundColor:'rgba(248,113,113,0.04)',
@@ -1867,10 +1873,10 @@ function ffrScenarioNarrative(sim, report){
  const growthLabel=Number.isFinite(growth)?(growth*100).toFixed(1)+'%':'not established';
  const source=ffrEsc(sim?.assumptions?.baseGrowthSource||'source not established');
  const opp=Number(sim?.modeledOpportunity||0);
- const currency='user-selected monetary units';
- const rows=[`<p><strong>Comparison baseline:</strong> ${growthLabel} annual change (${source}). This is a model assumption or historical estimate, not a guaranteed outcome.</p>`];
+ const currency=report?.currency||'selected currency';
+ const rows=[`<p><strong>Comparison baseline:</strong> ${growthLabel} annual change (${source}). This is a comparison assumption or a labeled historical estimate, not a company growth prediction.</p>`];
  if(!(opp>0)){
-   rows.push('<p><strong>Scenario interpretation:</strong> No admissible incremental recovery is applied to the revenue forecast. This can mean the opportunity lacks inputs, is implausible, or uses an incompatible revenue accounting basis. The displayed trajectories therefore coincide with the comparison baseline. Overlapping chart lines are expected.</p>');
+   rows.push('<p><strong>Recovery scenarios:</strong> Not calculated. Conservative, Base and Upside values have been withheld because the available data do not support comparable incremental revenue. This does <em>not</em> mean the company has zero growth potential.</p>');
  }else{
    rows.push(`<p><strong>Scenario interpretation:</strong> Conservative, base and upside trajectories apply different modeled realization parameters to an illustrative opportunity of ${ffrEsc(opp.toLocaleString('en-US',{maximumFractionDigits:0}))} ${currency}. Their divergence does not establish observed losses, achievable lift, or probabilities.</p>`);
  }
@@ -1878,6 +1884,23 @@ function ffrScenarioNarrative(sim, report){
  if(sim?.plausibility?.flagged)rows.push(`<p><strong>Financial hold:</strong> ${ffrEsc(sim.plausibility.reason||'The opportunity cannot be reconciled to the reporting basis.')} No speculative upside was added to the annual revenue trajectory.</p>`);
  rows.push('<p><strong>Decision standard:</strong> Validate the opportunity against actual funnel cohorts, implementation costs and contribution margin before investment.</p>');
  return rows.join('');
+}
+function ffrSetScenarioCards(prefix, sim){
+ const valid=Boolean(sim?.scenariosDistinct && Number(sim?.modeledOpportunity)>0);
+ const grid=document.getElementById(prefix==='s2-'?'s2-sc-sq':'sc-sq')?.closest('.scenario-grid');
+ if(!grid)return;
+ for(const id of [prefix+'sc-con',prefix+'sc-base',prefix+'sc-agg']){
+   const card=document.getElementById(id)?.closest('.sc');
+   if(card)card.style.display=valid?'':'none';
+ }
+ grid.classList.toggle('ffr-withheld-grid',!valid);
+ let note=grid.querySelector('.ffr-withheld-notice');
+ if(!valid){
+   if(!note){note=document.createElement('div');note.className='ffr-withheld-notice';grid.appendChild(note);}
+   note.innerHTML='<strong>Recovery scenarios: not calculated</strong>Conservative, Base and Upside trajectories are withheld because the financial evidence does not support comparable recovery figures. The displayed line is a comparison baseline only—not a prediction of business growth.';
+ }else if(note){note.remove();}
+ const base=document.getElementById(prefix+'sc-sq')?.closest('.sc');
+ if(base){const label=base.querySelector('.sc-lbl'); if(label)label.textContent='Comparison baseline';}
 }
 function ffrRender(report){
   window.ffrFullAuditReport=report;
@@ -1895,13 +1918,14 @@ function ffrRender(report){
   h+=`<div><div class="rlabel">02 · Revenue Mechanism</div><div class="rtext">${ffrEsc(l.title||'')} is a testable public-funnel hypothesis. A missing signal does not prove buyer abandonment or lost revenue. The model uses explicit sensitivity assumptions only.</div></div>`;
   h+=`<div><div class="rlabel">03 · Quantification & Provenance</div><div class="asm-table">${Object.entries(o.provenance||{}).map(([k,v])=>`<div class="asm-row"><span class="asm-k">${ffrEsc(k)}</span><span class="asm-v">${ffrEsc(v)}</span></div>`).join('')}</div>${o.available?`<div class="math-box"><div class="math-row">${o.qv} qualified monthly visitors × ${(o.fr*100).toFixed(1)}% modeled friction × ${(o.dcr*100).toFixed(1)}% DCR × ${(o.sqlr*100).toFixed(1)}% SQLR × ${(o.cr*100).toFixed(1)}% close rate × ${fc(report.acv)} annual ACV × 12 monthly cohorts</div><div class="math-row res">→ ${fc(o.oppLow)}–${fc(o.oppHigh)} illustrative new-contract annualized run-rate sensitivity (12 monthly acquisition cohorts; not recognized revenue)</div></div>`:`<div class="rtext">${ffrEsc(o.reason||'A monetary estimate cannot be established from the available evidence and inputs.')}</div>`}</div>`;
   h+=`<div><div class="rlabel">04 · Recommended Fixes</div><div class="rec-list">${recs.map((r,i)=>`<div class="rec"><div class="rec-n">FIX ${i+1}</div><div><div class="rec-t">${ffrEsc(r.title)}</div><div class="rec-d">${ffrEsc(r.what)}<br><strong>Where:</strong> ${ffrEsc(r.where)}<br><strong>Why:</strong> ${ffrEsc(r.why)}</div></div></div>`).join('')}</div></div>`;
-  h+=`<div><div class="rlabel">05 · Five-Year Scenario Model</div><div class="asm-table">${years.map(y=>`<div class="asm-row"><span class="asm-k">${y.label}</span><span class="asm-v">Status ${fc(y.status_quo)} · Conservative ${fc(y.conservative)} · Base ${fc(y.base)} · Full Upside ${fc(y.aggressive)}</span></div>`).join('')}</div><div class="rtext" style="margin-top:12px">${ffrEsc(sim.key_insight||'')} These scenarios are implementation assumptions, not forecasts of what will happen.</div></div>`;
+  h+=`<div><div class="rlabel">05 · Five-Year Revenue Comparison</div><div class="asm-table">${years.map(y=>`<div class="asm-row"><span class="asm-k">${y.label}</span><span class="asm-v">Comparison ${fc(y.status_quo)}${sim.scenariosDistinct?` · Conservative ${fc(y.conservative)} · Base ${fc(y.base)} · Upside ${fc(y.aggressive)}`:' · Recovery scenarios WITHHELD'}</span></div>`).join('')}</div><div class="rtext" style="margin-top:12px">${ffrEsc(sim.key_insight||'')} ${sim.scenariosDistinct?'These are conditional model sensitivities, not company forecasts.':'The comparison baseline does not establish actual or expected growth.'}</div></div>`;
   // The decision review is rendered only once in the dedicated Decision Room below.
   document.getElementById('r-sections').innerHTML=h;
   const room=document.getElementById('debate-body'); if(room)room.innerHTML=report.perspectives?ffrPerspectiveHTML(report.perspectives):'<p class="rtext">The review is unavailable for this report.</p>';
   const chartNote=document.getElementById('chart-summary-text'); if(chartNote)chartNote.innerHTML=ffrScenarioNarrative(sim,report);
-  if(document.getElementById('chart-ttl'))document.getElementById('chart-ttl').textContent=`5-Year Revenue Forecast — ${report.company}`;
+  if(document.getElementById('chart-ttl'))document.getElementById('chart-ttl').textContent=`${sim.scenariosDistinct?'5-Year Conditional Revenue Sensitivities':'5-Year Revenue Comparison'} — ${report.company}`;
   if(typeof renderChart==='function')renderChart('rev-chart',years,'chart1');
+  ffrSetScenarioCards('',sim);
   const s=sim.summary||{}; ['sc-sq','sc-con','sc-base','sc-agg'].forEach((id,i)=>{const vals=[s.status_quo_5yr,s.conservative_5yr,s.base_5yr,s.aggressive_5yr];if(document.getElementById(id))document.getElementById(id).textContent=fc(vals[i]||0)});
   if(document.getElementById('ki-text'))document.getElementById('ki-text').textContent=sim.key_insight||'';
   document.getElementById('s1-result').classList.add('active'); document.getElementById('s1-result').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1972,9 +1996,10 @@ window.runDocSimulation=async function(){
     setProgressS2(100,'Your forecast is ready.',5);document.getElementById('s2-progress').classList.remove('active');
     document.getElementById('s2-r-company').textContent=report.company;
     document.getElementById('s2-r-meta').textContent=`Financial document · ${report.stage} · ${new Date(report.createdAt).toLocaleDateString()}`;
-    document.getElementById('s2-chart-ttl').textContent=`Five-Year Revenue Scenarios — ${report.company}`;
+    document.getElementById('s2-chart-ttl').textContent=`${sim.scenariosDistinct?'5-Year Conditional Revenue Sensitivities':'5-Year Revenue Comparison'} — ${report.company}`;
     document.getElementById('s2-chart-summary-text').innerHTML=ffrScenarioNarrative(sim,report);
     if(typeof renderChart==='function')renderChart('s2-rev-chart',sim.years,'chart2');
+    ffrSetScenarioCards('s2-',sim);
     const summary=sim.summary||{};
     [['s2-sc-sq',summary.status_quo_5yr],['s2-sc-con',summary.conservative_5yr],['s2-sc-base',summary.base_5yr],['s2-sc-agg',summary.aggressive_5yr]].forEach(([id,n])=>document.getElementById(id).textContent=fc(n||0));
     document.getElementById('s2-ki-text').textContent=sim.key_insight||'';
@@ -2039,20 +2064,27 @@ function ffrSections(report){
   ...Object.entries(o.provenance||{}).map(([k,v])=>`${k.toUpperCase()} provenance: ${v}`),
   'No secondary leak opportunities have been summed to avoid double counting.'
  ]);
+ const scenarioAdmissible=Boolean(sim.scenariosDistinct && Number(sim.modeledOpportunity)>0);
  add(isAudit?'08  |  Five-Year Sensitivity':'04  |  Five-Year Sensitivity',[
   `Starting annual revenue: ${fmt(sim.startRevenue)}`,
   `Comparison baseline: ${pct(sim.baselineGrowth)} | Basis: ${sim.assumptions?.baseGrowthSource||'Not provided'}`,
-  `Modeled annual recovery used: ${fmt(sim.modeledOpportunity)} (before model-specific ramp assumptions).`,
-  `Raw annualized new-contract run-rate sensitivity: ${fmt(sim.rawModeledOpportunity)}.`,
+  `Revenue recovery scenario: ${scenarioAdmissible?'CONDITIONAL MODEL SENSITIVITY':'NOT CALCULATED - WITHHELD'}`,
+  `Raw unverified new-contract run-rate sensitivity: ${fmt(sim.rawModeledOpportunity)}. This is NOT recognized annual revenue.`,
   `Projection status: ${sim.projectionStatus||'Not established'}`,
-  ...(sim.years||[]).map(y=>`${y.label}: Comparison ${fmt(y.status_quo)} | Conservative ${fmt(y.conservative)} | Base ${fmt(y.base)} | Upside ${fmt(y.aggressive)}`),
+  ...(sim.years||[]).map(y=>scenarioAdmissible?`${y.label}: Comparison ${fmt(y.status_quo)} | Conservative ${fmt(y.conservative)} | Base ${fmt(y.base)} | Upside ${fmt(y.aggressive)}`:`${y.label}: Comparison baseline ${fmt(y.status_quo)} | Recovery scenarios withheld`),
   `Five-year comparison total: ${fmt(sim.summary?.status_quo_5yr)}`,
-  `Five-year conservative total: ${fmt(sim.summary?.conservative_5yr)}`,
-  `Five-year base total: ${fmt(sim.summary?.base_5yr)}`,
-  `Five-year upside total: ${fmt(sim.summary?.aggressive_5yr)}`,
-  `Modeled base difference: ${fmt(sim.summary?.incrementalBaseVsStatusQuo)} (NOT booked revenue).`,
-  ...(sim.warnings||[]).map(x=>'Scenario limitation: '+x),
-  `Accounting interpretation: ${sim.assumptions?.recognition||'ACV sensitivities are not recognized revenue.'}`,`Scenario realization settings: ${Object.entries(sim.assumptions?.scenarioParameters||{}).map(([k,v])=>`${k}: ${(v.realization*100).toFixed(0)}% realization, ${(v.effectiveness*100).toFixed(0)}% effectiveness, ${v.rampMonths} month ramp`).join('; ')}. These are hypotheses, not empirical probabilities.`
+  ...(scenarioAdmissible?[
+   `Five-year conservative sensitivity: ${fmt(sim.summary?.conservative_5yr)}`,
+   `Five-year base sensitivity: ${fmt(sim.summary?.base_5yr)}`,
+   `Five-year upside sensitivity: ${fmt(sim.summary?.aggressive_5yr)}`,
+   `Modeled base difference: ${fmt(sim.summary?.incrementalBaseVsStatusQuo)} (NOT booked revenue).`,
+   `Sensitivity settings: ${Object.entries(sim.assumptions?.scenarioParameters||{}).map(([k,v])=>`${k}: ${(v.realization*100).toFixed(0)}% realization, ${(v.effectiveness*100).toFixed(0)}% effectiveness, ${v.rampMonths} month ramp`).join('; ')}`
+  ]:[
+   'Conservative, Base and Upside: NOT CALCULATED. A withheld sensitivity is not evidence of zero recoverable revenue.',
+   'No additional revenue has been added to the comparison trajectory.'
+  ]),
+  ...(sim.warnings||[]).map(x=>'Model limitation: '+x),
+  `Accounting interpretation: ${sim.assumptions?.recognition||'ACV sensitivities are not recognized revenue.'}`
  ]);
  let ix=isAudit?9:5;
  for(const persona of ['systems','quantitative','commercial']){
@@ -2091,14 +2123,14 @@ function ffrDownloadPDF(kind){
   const sections=ffrSections(report);
   for(const sec of sections){heading(sec.name);for(const line of sec.lines){if(line.startsWith('http'))text(line,8);else text(line,8.8);}y+=3;}
   const chart=document.getElementById(kind==='forecast'?'s2-rev-chart':'rev-chart');
-  if(chart&&chart.width&&chart.height&&report.simulation?.years?.length){
+  if(chart&&chart.width&&chart.height&&report.simulation?.years?.length&&(report.simulation?.scenariosDistinct||report.simulation?.assumptions?.baselineObserved)){
    try{if(y>145)fresh();heading('FIVE-YEAR SENSITIVITY CHART');
     const image=chart.toDataURL('image/png');const chartHeight=Math.min(76,maxW*chart.height/chart.width);
     doc.addImage(image,'PNG',left,y,maxW,chartHeight);y+=chartHeight+6;
-    text('All chart lines come from the same declared revenue, currency and deterministic assumptions. Overlapping trajectories indicate no supportable incremental recovery.',8.7);
+    text('Chart data represent a disclosed comparison and, where admissible, conditional sensitivities; not validated growth predictions.',8.7);
     if(String(report.simulation.projectionStatus||'').startsWith('withheld-'))text('FINANCIAL HOLD: upside scenario values were withheld because the underlying opportunity cannot be reconciled with the reporting revenue basis and/or scale.',9,true);
     const summary=report.simulation.summary||{};
-    text(`Five-year comparison: ${report.currency||''} ${Number(summary.status_quo_5yr||0).toLocaleString('en-US')}. Conditional base: ${report.currency||''} ${Number(summary.base_5yr||0).toLocaleString('en-US')}.`,9);
+    text(`Five-year comparison: ${report.currency||''} ${Number(summary.status_quo_5yr||0).toLocaleString('en-US')}.${report.simulation.scenariosDistinct?` Conditional base: ${report.currency||''} ${Number(summary.base_5yr||0).toLocaleString('en-US')}.`:''}`,9);
    }catch(e){console.warn('Chart could not be embedded in PDF',e);}
   }
   const pages=doc.getNumberOfPages();for(let page=1;page<=pages;page++){doc.setPage(page);doc.setDrawColor(200,216,184);doc.line(left,H-16,W-right,H-16);doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(95,112,96);doc.text(`FFR | Deterministic assessment | ${report.currency||'Currency not specified'} | Conditional, not verified revenue loss`,left,H-11);doc.text(`${page} / ${pages}`,W-right-12,H-11);}
@@ -2160,7 +2192,7 @@ async function ffrDownloadExcel(kind){
    ['FLOWFORGE REVENUE | DECISION RECORD','Value'],['Company',report.company],['Assessment',kind],['Reporting currency',currency],['Decision',p.integrated?.conclusion||sim.key_insight],
    ['Report date',report.createdAt],['Starting annual revenue',money(sim.startRevenue)],['Recoverable opportunity',String(sim.projectionStatus||'').startsWith('withheld-')?'WITHHELD':o.available?'Unverified sensitivity':'Not quantified'],
    ['Model status',sim.projectionStatus||'Unknown'],['Baseline growth',`${(Number(sim.baselineGrowth||0)*100).toFixed(1)}%`],
-   ['Growth source',sim.assumptions?.baseGrowthSource],['Five-year comparison revenue',money(sim.summary?.status_quo_5yr)],['Conditional five-year base revenue',money(sim.summary?.base_5yr)],
+   ['Growth source',sim.assumptions?.baseGrowthSource],['Five-year comparison revenue',money(sim.summary?.status_quo_5yr)],['Conditional five-year base revenue',sim.scenariosDistinct?money(sim.summary?.base_5yr):'NOT CALCULATED'],
    ['Forecast limitations',(sim.warnings||[]).join(' | ')],['Engagement URL','https://flowforgerevenue.solutions/services.html']
   ],[38,105]);
   executive['B15'].l={Target:'https://flowforgerevenue.solutions/services.html',Tooltip:'Apply for a full revenue audit'};
@@ -2172,7 +2204,7 @@ async function ffrDownloadExcel(kind){
   }
   ffrSheet(wb,'Historical Revenue',[['Fiscal year','Revenue','Currency','Source'],...(fin.historicalRevenue||[]).map(x=>[x.period,x.value,currency,x.source])],[24,25,18,75]);
   const years=sim.years||[];
-  ffrSheet(wb,'Scenario Chart',[['Year','Comparison baseline','Conservative sensitivity','Base sensitivity','Upside sensitivity'],...years.map(y=>[y.label,y.status_quo,y.conservative,y.base,y.aggressive])],[24,28,28,28,28]);
+  ffrSheet(wb,'Scenario Chart',sim.scenariosDistinct?[['Year','Comparison baseline','Conservative sensitivity','Base sensitivity','Upside sensitivity'],...years.map(y=>[y.label,y.status_quo,y.conservative,y.base,y.aggressive])]:[['Year','Comparison baseline','Recovery scenarios'],...years.map(y=>[y.label,y.status_quo,'NOT CALCULATED'])],sim.scenariosDistinct?[24,28,28,28,28]:[24,28,29]);
   ffrSheet(wb,'Decision Room',[['Role','Argument / Challenge / Response'],...['systems','quantitative','commercial'].flatMap(k=>{const x=p[k];return x?[[x.title,x.argument],['Evidence', (x.evidence||[]).join(' | ')],['Challenge',x.challenge],['Decision',x.action]]:[]}),...(p.debate||[]).map(x=>[`${x.speaker} -> ${x.respondsTo}`,x.critique+' '+x.response]),['Integrated decision',p.integrated?.conclusion||'Unestablished'],['Next steps',(p.integrated?.nextSteps||[]).join(' | ')]],[34,130]);
   ffrSheet(wb,'Model Limitations',[['Issue','Explanation'],...(sim.warnings||[]).map((x,i)=>[`Scenario ${i+1}`,x]),...(fin.warnings||[]).map((x,i)=>[`Document ${i+1}`,x]),...(report.integrity?.warnings||[]).map((x,i)=>[`Integrity ${i+1}`,x])],[30,115]);
   const sections=ffrSections(report);
