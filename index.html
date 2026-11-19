@@ -1986,7 +1986,7 @@ window.runDocSimulation=async function(){
   document.getElementById('s2-error').className='err-box';document.getElementById('s2-result').className='result-wrap';
   try{
     setProgressS2(15,'Extracting financial data...',1);
-    const response=await fetch(`${API}/api/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType})});
+    const response=await fetch(`${API}/api/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,stage,acv,currentRevenue:revenue,fileContent:S.uploadedContent,fileType:S.uploadedType,currency})});
     const data=await ffrJson(response);const report=data.full_report;
     if(!report?.simulation || !Array.isArray(report.simulation.years) || report.simulation.years.length!==5) throw new Error('The forecast service returned an incomplete five-year model.');
     const sim=report.simulation;
